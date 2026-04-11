@@ -1,33 +1,56 @@
 generator client {
-
- provider = "prisma-client-js"
-
+  provider = "prisma-client-js"
 }
 
 datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
 
- provider = "sqlite"
-
- url      = env("DATABASE_URL")
-
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
 }
 
 model Student {
+  id            Int              @id @default(autoincrement())
+  name          String
+  email         String           @unique
+  phone         String
+  address       String
+  branch        String
+  section       String
+  semester      Int
+  attendance    Float
+  feeStatus     String           // Paid or Unpaid
+  academicReport AcademicReport[]
+  createdAt     DateTime         @default(now())
+}
 
- id       Int     @id @default(autoincrement())
+model AcademicReport {
+  id         Int     @id @default(autoincrement())
+  studentId  Int
+  subject    String
+  marks      Float
+  grade      String
+  Student    Student @relation(fields: [studentId], references: [id])
+}
 
- name     String
+model Teacher {
+  id        Int    @id @default(autoincrement())
+  name      String
+  subject   String
+  phone     String
+  address   String
+  photoUrl  String
+}
 
- math     Int
-
- science  Int
-
- english  Int
- 
- total    Int?
- 
- average  Float?
-
- grade    String?
-
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  eventDate   DateTime
 }
