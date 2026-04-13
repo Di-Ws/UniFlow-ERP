@@ -9,6 +9,7 @@ import Profile from './pages/Profile/Profile';
 import Students from './pages/Students';
 import StudentProfile from './pages/StudentProfile';
 import Teachers from './pages/Teachers';
+import Leaves from './pages/Leaves';
 import Settings from './pages/Settings';
 import { Events } from './pages/PlaceholderPages'; // Keeping logic for event page simple for now
 
@@ -78,6 +79,16 @@ function App() {
             <ProtectedRoute>
               <DashboardLayout>
                 <Teachers />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/leaves" 
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Leaves />
               </DashboardLayout>
             </ProtectedRoute>
           } 

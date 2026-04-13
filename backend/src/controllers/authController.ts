@@ -6,6 +6,7 @@ export const register = async (req: Request, res: Response) => {
     await authService.registerUser(req.body);
     res.json({ message: "Registered" });
   } catch (error: any) {
+    console.error("Register Error:", error);
     // Basic mapping of specific service errors to 400 Bad Request
     const clientErrors = [
       "User with this email already exists",
@@ -29,10 +30,12 @@ export const login = async (req: Request, res: Response) => {
       user: {
         id: user.id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        role: user.role
       }
     });
   } catch (error: any) {
+    console.error("Login Error:", error);
     if (error.message === "User not found") {
       return res.status(404).json({ message: error.message });
     }
@@ -66,10 +69,12 @@ export const updateProfile = async (req: any, res: Response) => {
       user: {
         id: updatedUser.id,
         name: updatedUser.name,
-        email: updatedUser.email
+        email: updatedUser.email,
+        role: updatedUser.role
       }
     });
   } catch (error: any) {
+    console.error("Update Profile Error:", error);
     const clientErrors = [
       "User with this email already exists",
       "Name must be at least 2 characters long",

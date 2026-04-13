@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:3000',
+  baseURL: 'http://localhost:5000/api',
 });
 
 api.interceptors.request.use(
@@ -12,7 +12,10 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error("Axios Global Interceptor Error:", error.response || error.message || error);
+    return Promise.reject(error);
+  }
 );
 
 export default api;

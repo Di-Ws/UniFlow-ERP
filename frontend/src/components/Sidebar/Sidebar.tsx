@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Users, PieChart, GraduationCap, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, PieChart, GraduationCap, Settings, LogOut, Calendar } from 'lucide-react';
 import { getCurrentUserAPI } from '../../api/auth';
 import './Sidebar.css';
 
@@ -64,6 +64,12 @@ const Sidebar: React.FC = () => {
             <NavLink to="/events" className={({ isActive }) => isActive ? 'active' : ''}>
               <PieChart size={20} />
               <span>Upcoming Events</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/leaves" className={({ isActive }) => isActive ? 'active' : ''}>
+              <Calendar size={20} />
+              <span>Leaves</span>
             </NavLink>
           </li>
           <li>
