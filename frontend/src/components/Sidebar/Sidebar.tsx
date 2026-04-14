@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Users, PieChart, GraduationCap, Settings, LogOut, Calendar } from 'lucide-react';
+import { LayoutDashboard, Users, PieChart, GraduationCap, Settings, LogOut, Calendar, UserCircle } from 'lucide-react';
 import { getCurrentUserAPI } from '../../api/auth';
+import { logout, getUserRole } from '../../utils/auth';
 import './Sidebar.css';
 
 const Sidebar: React.FC = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{ name: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
+  const role = getUserRole();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -22,62 +24,75 @@ const Sidebar: React.FC = () => {
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
-    localStorage.removeItem('token');
-    navigate('/login');
+    logout();
   };
+
+  const getRoleBadge = (role: string) => {
+    const styles: Record<string, string> = {
+      HOD: 'bg-red-500/10 text-red-500 border-red-500/20',
+      Faculty: 'bg-green-500/10 text-green-500 border-green-500/20',
+      Student: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+    };
+    return (
+      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${styles[role] || 'bg-slate-500/10 text-slate-500 border-slate-500/20'}`}>
+        {role.toUpperCase()}
+      </span>
+    );
+  };
+
+  // Define menu items per role
+  const menuItems = {
+    HOD: [
+      { path: '/hod/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      { path: '/hod/students', icon: Users, label: 'Students' },
+      { path: '/hod/faculty', icon: GraduationCap, label: 'Faculty' },
+      { path: '/hod/leaves', icon: Calendar, label: 'Leaves' },
+      { path: '/hod/events', icon: PieChart, label: 'Events' },
+      { path: '/hod/settings', icon: Settings, label: 'Settings' },
+    ],
+    Faculty: [
+      { path: '/faculty/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      { path: '/faculty/students', icon: Users, label: 'My Students' },
+      { path: '/faculty/leaves', icon: Calendar, label: 'My Leaves' },
+      { path: '/faculty/events', icon: PieChart, label: 'Events' },
+      { path: '/faculty/settings', icon: Settings, label: 'Settings' },
+    ],
+    Student: [
+      { path: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+      { path: '/student/profile', icon: UserCircle, label: 'My Profile' },
+      { path: '/student/leaves', icon: Calendar, label: 'My Leaves' },
+      { path: '/student/events', icon: PieChart, label: 'Events' },
+    ],
+  };
+
+  const currentMenuItems = menuItems[(role as keyof typeof menuItems)] || [];
 
   return (
     <div className="sidebar">
       <Link to="/profile" className="sidebar-profile-link">
         <div className="sidebar-profile">
           <div className="avatar">
-            <img src="https://i.pravatar.cc/150?u=admin" alt="Admin Profile" />
+            <img src={`https://i.pravatar.cc/150?u=${user?.name || 'user'}`} alt="Profile" />
           </div>
           <div className="profile-info">
-            <h3>{user ? user.name : 'Admin User'}</h3>
-            <p>Superadmin</p>
+            <div className="flex flex-col gap-1">
+              <h3 className="truncate w-32">{user ? user.name : 'User'}</h3>
+              {role && getRoleBadge(role)}
+            </div>
           </div>
         </div>
       </Link>
 
       <nav className="sidebar-menu">
         <ul>
-          <li>
-            <NavLink to="/" end className={({ isActive }) => isActive ? 'active' : ''}>
-              <LayoutDashboard size={20} />
-              <span>Dashboard</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/students" className={({ isActive }) => isActive ? 'active' : ''}>
-              <Users size={20} />
-              <span>Students</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/teachers" className={({ isActive }) => isActive ? 'active' : ''}>
-              <GraduationCap size={20} />
-              <span>Teachers</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/events" className={({ isActive }) => isActive ? 'active' : ''}>
-              <PieChart size={20} />
-              <span>Upcoming Events</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/leaves" className={({ isActive }) => isActive ? 'active' : ''}>
-              <Calendar size={20} />
-              <span>Leaves</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/settings" className={({ isActive }) => isActive ? 'active' : ''}>
-              <Settings size={20} />
-              <span>Settings</span>
-            </NavLink>
-          </li>
+          {currentMenuItems.map((item) => (
+            <li key={item.path}>
+              <NavLink to={item.path} className={({ isActive }) => isActive ? 'active' : ''}>
+                <item.icon size={20} />
+                <span>{item.label}</span>
+              </NavLink>
+            </li>
+          ))}
         </ul>
       </nav>
 

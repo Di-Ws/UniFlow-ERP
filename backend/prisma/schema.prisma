@@ -12,8 +12,12 @@ model User {
   name      String
   email     String   @unique
   password  String
-  role      String   @default("Faculty") // Roles: "HOD", "Faculty"
+  role      String   @default("Faculty") // Roles: "HOD", "Faculty", "Student"
   createdAt DateTime @default(now())
+  
+  // Relations
+  leaves          Leave[] @relation("UserLeaves")
+  approvedLeaves  Leave[] @relation("ApprovedLeaves")
 }
 
 model Student {
@@ -60,17 +64,30 @@ model Event {
   eventDate   DateTime
 }
 
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model Leave {
-  id          Int      @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   userId      Int
   userName    String
-  userRole    String   // "Student", "Faculty", "HOD"
-  leaveType   String   // "Sick", "Casual", "Academic", "Other"
+  userRole    String      // "Student", "Faculty", "HOD"
+  leaveType   String      // "Sick", "Casual", "Academic", "Other"
   startDate   DateTime
   endDate     DateTime
   reason      String
-  status      String   @default("Pending") // "Pending", "Approved", "Rejected"
-  reviewedBy  String?  // Name of HOD who approved/rejected
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      LeaveStatus @default(PENDING)
+  
+  // Relation to User who applied
+  user        User        @relation("UserLeaves", fields: [userId], references: [id])
+  
+  // Relation to HOD who approved/rejected
+  approvedById Int?
+  approvedBy   User?      @relation("ApprovedLeaves", fields: [approvedById], references: [id])
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 }

@@ -11,13 +11,14 @@ const Register: React.FC = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    role: 'Faculty' // Default role
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -73,7 +74,12 @@ const Register: React.FC = () => {
 
     try {
       setIsLoading(true);
-      await registerAPI({ name: formData.name, email: formData.email, password: formData.password });
+      await registerAPI({ 
+        name: formData.name, 
+        email: formData.email, 
+        password: formData.password,
+        role: formData.role 
+      });
       navigate('/login');
     } catch (err: any) {
       // Map server message to correct field or general state
@@ -127,6 +133,30 @@ const Register: React.FC = () => {
             onChange={handleChange}
             error={errors.email}
           />
+
+          <div className="input-group" style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#94a3b8', marginBottom: '0.5rem' }}>Register As</label>
+            <select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                background: '#1e293b',
+                border: '1px solid #334155',
+                borderRadius: '8px',
+                color: '#f8fafc',
+                fontSize: '0.9rem',
+                outline: 'none',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="HOD">HOD (Admin)</option>
+              <option value="Faculty">Faculty</option>
+              <option value="Student">Student</option>
+            </select>
+          </div>
           
           <InputField
             label="Password"

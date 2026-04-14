@@ -4,11 +4,13 @@ import { Edit2, Trash2 } from 'lucide-react';
 
 interface StudentTableProps {
   students: Student[];
-  onEdit: (student: Student) => void;
-  onDelete: (id: number) => void;
+  onEdit?: (student: Student) => void;
+  onDelete?: (id: number) => void;
 }
 
 const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete }) => {
+  const showActions = onEdit || onDelete;
+
   return (
     <div className="overflow-x-auto rounded-lg shadow ring-1 ring-black ring-opacity-5">
       <table className="min-w-full divide-y divide-gray-700 bg-[#111827]">
@@ -20,9 +22,11 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete 
             <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-300">Section</th>
             <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-300">Attendance</th>
             <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-300">Fees Status</th>
-            <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-              <span className="sr-only">Actions</span>
-            </th>
+            {showActions && (
+              <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                <span className="sr-only">Actions</span>
+              </th>
+            )}
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-800">
@@ -52,16 +56,22 @@ const StudentTable: React.FC<StudentTableProps> = ({ students, onEdit, onDelete 
                   {student.feeStatus || 'Pending'}
                 </span>
               </td>
-              <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                <div className="flex justify-end gap-3">
-                  <button onClick={() => onEdit(student)} className="text-indigo-400 hover:text-indigo-300" title="Edit Student">
-                    <Edit2 size={16} />
-                  </button>
-                  <button onClick={() => onDelete(student.id)} className="text-red-400 hover:text-red-300" title="Delete Student">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </td>
+              {showActions && (
+                <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                  <div className="flex justify-end gap-3">
+                    {onEdit && (
+                      <button onClick={() => onEdit(student)} className="text-indigo-400 hover:text-indigo-300" title="Edit Student">
+                        <Edit2 size={16} />
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button onClick={() => onDelete(student.id)} className="text-red-400 hover:text-red-300" title="Delete Student">
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

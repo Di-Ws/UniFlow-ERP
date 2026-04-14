@@ -1,8 +1,9 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { prisma } from "../config/db";
+import { AuthRequest } from "../middleware/authMiddleware";
 
 // Create Student
-export const createStudent = async (req: Request, res: Response) => {
+export const createStudent = async (req: AuthRequest, res: Response) => {
   try {
     const student = await prisma.student.create({
       data: req.body
@@ -13,21 +14,39 @@ export const createStudent = async (req: Request, res: Response) => {
   }
 };
 
-// Get All Students (with optional search)
-export const getStudents = async (req: Request, res: Response) => {
+// Get All Students (with optional search) - Role Aware
+export const getStudents = async (req: AuthRequest, res: Response) => {
   try {
     const { search } = req.query;
-    let where = {};
+    const role = req.userRole;
+    const userId = req.userId;
+
+    let where: any = {};
     
+    // Add search filter if present
     if (search) {
-      where = {
-        OR: [
-          { name: { contains: String(search) } },
-          { email: { contains: String(search) } },
-          { branch: { contains: String(search) } },
-          { section: { contains: String(search) } }
-        ]
-      };
+      where.OR = [
+        { name: { contains: String(search) } },
+        { email: { contains: String(search) } },
+        { branch: { contains: String(search) } },
+        { section: { contains: String(search) } }
+      ];
+    }
+
+    // Role-based filtering
+    if (role === 'Faculty') {
+      // Find the teacher record matching this user
+      const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+      const teacher = await prisma.teacher.findUnique({ 
+        where: { email: user?.email || "" },
+        select: { students: { select: { id: true } } }
+      });
+      const assignedStudentIds = teacher?.students.map(s => s.id) || [];
+      where.id = { in: assignedStudentIds };
+    } else if (role === 'Student') {
+      // Students only see themselves
+      const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+      where.email = user?.email || "";
     }
 
     const students = await prisma.student.findMany({
@@ -41,7 +60,7 @@ export const getStudents = async (req: Request, res: Response) => {
 };
 
 // Get Single Student
-export const getStudentById = async (req: Request, res: Response) => {
+export const getStudentById = async (req: AuthRequest, res: Response) => {
   try {
     const student = await prisma.student.findUnique({
       where: { id: Number(req.params.id) },
@@ -55,7 +74,7 @@ export const getStudentById = async (req: Request, res: Response) => {
 };
 
 // Update Student
-export const updateStudent = async (req: Request, res: Response) => {
+export const updateStudent = async (req: AuthRequest, res: Response) => {
   try {
     const student = await prisma.student.update({
       where: { id: Number(req.params.id) },
@@ -68,7 +87,7 @@ export const updateStudent = async (req: Request, res: Response) => {
 };
 
 // Delete Student
-export const deleteStudent = async (req: Request, res: Response) => {
+export const deleteStudent = async (req: AuthRequest, res: Response) => {
   try {
     await prisma.student.delete({
       where: { id: Number(req.params.id) }
@@ -79,21 +98,41 @@ export const deleteStudent = async (req: Request, res: Response) => {
   }
 };
 
-// Dashboard Statistics
-export const getDashboardStats = async (req: Request, res: Response) => {
+// Dashboard Statistics - Role Aware
+export const getDashboardStats = async (req: AuthRequest, res: Response) => {
   try {
-    const totalStudents = await prisma.student.count();
-    
-    const students = await prisma.student.findMany({
-      select: { attendance: true, feeStatus: true, branch: true }
-    });
+    const role = req.userRole;
+    const userId = req.userId;
 
-    const avgAttendance = students.length > 0 
-      ? (students.reduce((acc, s) => acc + s.attendance, 0) / students.length).toFixed(2) 
+    let students: any[] = [];
+
+    if (role === 'HOD') {
+      students = await prisma.student.findMany({
+        select: { attendance: true, feeStatus: true, branch: true }
+      });
+    } else if (role === 'Faculty') {
+      const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+      const teacher = await prisma.teacher.findUnique({ 
+        where: { email: user?.email || "" },
+        include: { students: { select: { attendance: true, feeStatus: true, branch: true } } }
+      });
+      students = teacher?.students || [];
+    } else if (role === 'Student') {
+      const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+      const student = await prisma.student.findUnique({
+        where: { email: user?.email || "" },
+        select: { attendance: true, feeStatus: true, branch: true }
+      });
+      students = student ? [student] : [];
+    }
+
+    const totalStudents = students.length;
+    const avgAttendance = totalStudents > 0 
+      ? (students.reduce((acc, s) => acc + s.attendance, 0) / totalStudents).toFixed(2) 
       : 0;
     
     const paidCount = students.filter(s => s.feeStatus.toLowerCase() === 'paid').length;
-    const feePaidPercent = students.length > 0 ? ((paidCount / students.length) * 100).toFixed(2) : 0;
+    const feePaidPercent = totalStudents > 0 ? ((paidCount / totalStudents) * 100).toFixed(2) : 0;
 
     const branchCounts = students.reduce((acc: any, s) => {
       acc[s.branch] = (acc[s.branch] || 0) + 1;

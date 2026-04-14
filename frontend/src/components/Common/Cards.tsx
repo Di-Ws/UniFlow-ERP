@@ -52,20 +52,27 @@ export const TeacherCard: React.FC<{ teacher: any; onEdit?: (t: any) => void; on
               <span>{teacher.email}</span>
             </div>
           )}
-          <div className="detail-item">
-            <Phone size={14} />
-            <span>{teacher.phone}</span>
-          </div>
-          <div className="detail-item">
-            <MapPin size={14} />
-            <span>{teacher.address}</span>
-          </div>
-          <div className="detail-item">
-            <User size={14} />
-            <span>{studentCount} student{studentCount !== 1 ? 's' : ''} assigned</span>
-          </div>
+          {teacher.phone && (
+            <div className="detail-item">
+              <Phone size={14} />
+              <span>{teacher.phone}</span>
+            </div>
+          )}
+          {teacher.address && (
+            <div className="detail-item">
+              <MapPin size={14} />
+              <span>{teacher.address}</span>
+            </div>
+          )}
+          {teacher.students && (
+            <div className="detail-item">
+              <User size={14} />
+              <span>{studentCount} student{studentCount !== 1 ? 's' : ''} assigned</span>
+            </div>
+          )}
         </div>
       </div>
+
       {(onEdit || onDelete || onAssign) && (
         <div className="card-footer" style={{ display: 'flex', gap: '0.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
           {onAssign && (
@@ -106,3 +113,5 @@ const PercentBadge: React.FC<{ value: number, label: string }> = ({ value, label
     </div>
   );
 };
+
+export default StudentCard;

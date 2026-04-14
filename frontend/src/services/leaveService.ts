@@ -9,9 +9,12 @@ export interface Leave {
   startDate: string;
   endDate: string;
   reason: string;
-  status: string;
-  reviewedBy?: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  approvedBy?: {
+    name: string;
+  };
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface LeaveInput {

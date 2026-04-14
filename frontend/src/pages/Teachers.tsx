@@ -7,7 +7,10 @@ import FacultyForm from '../components/Faculty/FacultyForm';
 import { Plus, Search, X } from 'lucide-react';
 import './Teachers.css';
 
+import { getUserRole } from '../utils/auth';
+
 const Teachers: React.FC = () => {
+  const role = getUserRole();
   const [faculty, setFaculty] = useState<Faculty[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -44,8 +47,8 @@ const Teachers: React.FC = () => {
     const q = searchQuery.toLowerCase();
     return faculty.filter(f =>
       f.name.toLowerCase().includes(q) ||
-      f.department.toLowerCase().includes(q) ||
-      f.subject.toLowerCase().includes(q)
+      (f.department && f.department.toLowerCase().includes(q)) ||
+      (f.subject && f.subject.toLowerCase().includes(q))
     );
   }, [faculty, searchQuery]);
 
@@ -109,22 +112,26 @@ const Teachers: React.FC = () => {
 
   if (loading) return <div className="loading-state">Loading Faculty Data...</div>;
 
+  const isHod = role === 'HOD';
+
   return (
     <div className="teachers-page">
       {/* Page Header */}
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
         <div className="header-info">
-          <h1>Faculty Management</h1>
-          <p>Manage faculty members, assign students, and track workloads</p>
+          <h1>{role === 'Student' ? 'My Teachers' : 'Faculty Management'}</h1>
+          <p>{role === 'Student' ? 'View details of faculty members assigned to you' : 'Manage faculty members, assign students, and track workloads'}</p>
         </div>
-        <button onClick={handleAddClick} style={{
-          display: 'flex', alignItems: 'center', gap: '0.5rem',
-          padding: '0.6rem 1.2rem', fontSize: '0.9rem', fontWeight: 600,
-          background: 'var(--primary-color, #6366f1)', color: '#fff',
-          border: 'none', borderRadius: '8px', cursor: 'pointer'
-        }}>
-          <Plus size={18} /> Add Faculty
-        </button>
+        {isHod && (
+          <button onClick={handleAddClick} style={{
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            padding: '0.6rem 1.2rem', fontSize: '0.9rem', fontWeight: 600,
+            background: 'var(--primary-color, #6366f1)', color: '#fff',
+            border: 'none', borderRadius: '8px', cursor: 'pointer'
+          }}>
+            <Plus size={18} /> Add Faculty
+          </button>
+        )}
       </div>
 
       {/* Search Bar */}
@@ -162,9 +169,9 @@ const Teachers: React.FC = () => {
 
       {/* Faculty Cards Grid */}
       {!error && filteredFaculty.length === 0 ? (
-        <div className="empty-state">
-          <h3>No faculty members found.</h3>
-          <p>{searchQuery ? 'Try adjusting your search.' : 'Add your first faculty member to get started.'}</p>
+        <div className="empty-state text-center" style={{ padding: '4rem 2rem' }}>
+          <h3 style={{ color: '#fff', fontSize: '1.25rem', marginBottom: '0.5rem' }}>No faculty members found.</h3>
+          <p style={{ color: '#9ca3af' }}>{searchQuery ? 'Try adjusting your search.' : 'There are currently no faculty assigned to you.'}</p>
         </div>
       ) : (
         <div className="teachers-grid">
@@ -172,9 +179,9 @@ const Teachers: React.FC = () => {
             <TeacherCard
               key={f.id}
               teacher={f}
-              onEdit={handleEditClick}
-              onDelete={handleDeleteClick}
-              onAssign={handleAssignClick}
+              onEdit={isHod ? handleEditClick : undefined}
+              onDelete={isHod ? handleDeleteClick : undefined}
+              onAssign={isHod ? handleAssignClick : undefined}
             />
           ))}
         </div>

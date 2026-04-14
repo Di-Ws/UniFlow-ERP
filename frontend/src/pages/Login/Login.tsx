@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Network } from 'lucide-react';
 import InputField from '../../components/Auth/InputField';
 import { loginAPI } from '../../api/auth';
+import { setAuthData } from '../../utils/auth';
 import '../../styles/Auth.css';
 
 const Login: React.FC = () => {
@@ -46,9 +47,11 @@ const Login: React.FC = () => {
       setIsLoading(true);
       const data = await loginAPI(formData);
       if (data.token) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        navigate('/');
+        setAuthData(data.token, data.user);
+        
+        // Role-based redirection
+        const role = data.user.role.toLowerCase();
+        navigate(`/${role}/dashboard`);
       }
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message || 'Failed to login';

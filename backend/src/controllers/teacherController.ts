@@ -1,7 +1,8 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { prisma } from "../config/db";
+import { AuthRequest } from "../middleware/authMiddleware";
 
-export const addTeacher = async (req: Request, res: Response) => {
+export const addTeacher = async (req: AuthRequest, res: Response) => {
   try {
     const teacher = await prisma.teacher.create({
       data: req.body,
@@ -14,15 +15,47 @@ export const addTeacher = async (req: Request, res: Response) => {
   }
 };
 
-export const getTeachers = async (req: Request, res: Response) => {
+export const getTeachers = async (req: AuthRequest, res: Response) => {
   try {
-    const teachers = await prisma.teacher.findMany({
-      include: {
+    const role = req.userRole;
+    const userId = req.userId;
+
+    let where: any = {};
+    
+    if (role === 'Student') {
+      // Find the student record matching this user
+      const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+      const student = await prisma.student.findUnique({ 
+        where: { email: user?.email || "" },
+        select: { teachers: { select: { id: true } } }
+      });
+      const assignedTeacherIds = student?.teachers.map(t => t.id) || [];
+      where.id = { in: assignedTeacherIds };
+    }
+
+    let query: any = { where };
+
+    if (role === 'Student') {
+      // Limit fields for students
+      query.select = {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        subject: true,
+        department: true,
+        designation: true
+      };
+    } else {
+      // Include student assignments for Faculty/HOD
+      query.include = {
         students: {
           select: { id: true, name: true, branch: true, section: true }
         }
-      }
-    });
+      };
+    }
+
+    const teachers = await prisma.teacher.findMany(query);
     res.json(teachers);
   } catch (error: any) {
     console.error("Error fetching teachers:", error);
@@ -30,7 +63,7 @@ export const getTeachers = async (req: Request, res: Response) => {
   }
 };
 
-export const getTeacherById = async (req: Request, res: Response) => {
+export const getTeacherById = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const teacher = await prisma.teacher.findUnique({
@@ -51,7 +84,7 @@ export const getTeacherById = async (req: Request, res: Response) => {
   }
 };
 
-export const updateTeacher = async (req: Request, res: Response) => {
+export const updateTeacher = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const teacher = await prisma.teacher.update({
@@ -66,7 +99,7 @@ export const updateTeacher = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteTeacher = async (req: Request, res: Response) => {
+export const deleteTeacher = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     await prisma.teacher.delete({ where: { id: parseInt(id) } });
@@ -77,10 +110,10 @@ export const deleteTeacher = async (req: Request, res: Response) => {
   }
 };
 
-export const assignStudents = async (req: Request, res: Response) => {
+export const assignStudents = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { studentIds } = req.body; // Array of student IDs
+    const { studentIds } = req.body;
 
     if (!Array.isArray(studentIds)) {
       return res.status(400).json({ message: "studentIds must be an array" });

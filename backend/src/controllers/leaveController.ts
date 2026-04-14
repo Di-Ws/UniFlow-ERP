@@ -9,11 +9,15 @@ export const getLeaves = async (req: any, res: Response) => {
 
     let leaves;
     if (user?.role === "HOD") {
-      leaves = await prisma.leave.findMany({ orderBy: { createdAt: "desc" } });
+      leaves = await prisma.leave.findMany({ 
+        orderBy: { createdAt: "desc" },
+        include: { approvedBy: { select: { name: true } } }
+      });
     } else {
       leaves = await prisma.leave.findMany({
         where: { userId },
-        orderBy: { createdAt: "desc" }
+        orderBy: { createdAt: "desc" },
+        include: { approvedBy: { select: { name: true } } }
       });
     }
     res.json(leaves);
@@ -29,7 +33,8 @@ export const getUserLeaves = async (req: any, res: Response) => {
     const userId = req.userId;
     const leaves = await prisma.leave.findMany({
       where: { userId },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: "desc" },
+      include: { approvedBy: { select: { name: true } } }
     });
     res.json(leaves);
   } catch (error: any) {
@@ -86,15 +91,21 @@ export const updateLeaveStatus = async (req: any, res: Response) => {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!["Approved", "Rejected"].includes(status)) {
-      return res.status(400).json({ message: "Status must be 'Approved' or 'Rejected'" });
+    const validStatuses = ["APPROVED", "REJECTED"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Status must be 'APPROVED' or 'REJECTED'" });
     }
 
     const leave = await prisma.leave.update({
       where: { id: parseInt(id) },
       data: {
-        status,
-        reviewedBy: user.name
+        status: status as any,
+        approvedById: userId
+      },
+      include: {
+        approvedBy: {
+          select: { name: true }
+        }
       }
     });
     res.json(leave);

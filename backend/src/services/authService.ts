@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = "secret123";
 
 export const registerUser = async (data: any) => {
-  const { name, email: rawEmail, password } = data;
+  const { name, email: rawEmail, password, role } = data;
   const email = String(rawEmail).toLowerCase();
 
   // Criteria Validation
@@ -37,7 +37,8 @@ export const registerUser = async (data: any) => {
     data: {
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      role: role || "Faculty"
     }
   });
 
