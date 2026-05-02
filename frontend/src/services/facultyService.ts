@@ -1,68 +1,66 @@
-import api from './api';
+import api from '../api/axiosConfig';
 
 export interface Faculty {
   id: number;
   name: string;
   email?: string;
+  department?: string | { name: string };
+  phone?: string;
+  address?: string;
+  photoUrl?: string;
+  students?: any[];
+}
+
+export interface FacultyInput {
+  name: string;
+  email: string;
   department: string;
-  subject: string;
   phone: string;
   address: string;
   photoUrl: string;
-  students?: { id: number; name: string; branch: string; section: string }[];
+  departmentId?: number;
 }
 
-export type FacultyInput = Omit<Faculty, 'id' | 'students'>;
+// ── Faculty Dashboard endpoints (logged-in faculty only) ──────────────────────
 
-export const getFaculty = async (): Promise<Faculty[]> => {
-  try {
-    const response = await api.get<Faculty[]>('/teachers');
-    return response.data;
-  } catch (error) {
-    throw new Error('Failed to fetch faculty members.');
-  }
+export const getFacultySummary = async () => {
+  const response = await api.get('/faculty/summary');
+  return response.data;
 };
 
-export const getFacultyById = async (id: number): Promise<Faculty> => {
-  try {
-    const response = await api.get<Faculty>(`/teachers/${id}`);
-    return response.data;
-  } catch (error) {
-    throw new Error(`Failed to fetch faculty member with ID: ${id}`);
-  }
+export const getAssignedStudents = async () => {
+  const response = await api.get('/faculty/students');
+  return response.data;
 };
 
-export const createFaculty = async (data: FacultyInput): Promise<Faculty> => {
-  try {
-    const response = await api.post<Faculty>('/teachers', data);
-    return response.data;
-  } catch (error) {
-    throw new Error('Failed to create faculty member.');
-  }
+export const markAttendance = async (attendanceData: { studentIds: number[], subject: string, status: string }) => {
+  const response = await api.post('/faculty/attendance', attendanceData);
+  return response.data;
 };
 
-export const updateFaculty = async (id: number, data: Partial<FacultyInput>): Promise<Faculty> => {
-  try {
-    const response = await api.put<Faculty>(`/teachers/${id}`, data);
-    return response.data;
-  } catch (error) {
-    throw new Error(`Failed to update faculty member with ID: ${id}`);
-  }
+// ── HOD admin CRUD for faculty members ───────────────────────────────────────
+
+export const getFaculty = async () => {
+  const response = await api.get('/teachers');
+  return response.data;
 };
 
-export const deleteFaculty = async (id: number): Promise<void> => {
-  try {
-    await api.delete(`/teachers/${id}`);
-  } catch (error) {
-    throw new Error(`Failed to delete faculty member with ID: ${id}`);
-  }
+export const createFaculty = async (data: FacultyInput) => {
+  const response = await api.post('/teachers', data);
+  return response.data;
 };
 
-export const assignStudentsToFaculty = async (facultyId: number, studentIds: number[]): Promise<Faculty> => {
-  try {
-    const response = await api.post<Faculty>(`/teachers/${facultyId}/assign-students`, { studentIds });
-    return response.data;
-  } catch (error) {
-    throw new Error('Failed to assign students to faculty member.');
-  }
+export const updateFaculty = async (id: number, data: Partial<FacultyInput>) => {
+  const response = await api.put(`/teachers/${id}`, data);
+  return response.data;
+};
+
+export const deleteFaculty = async (id: number) => {
+  const response = await api.delete(`/teachers/${id}`);
+  return response.data;
+};
+
+export const assignStudentsToFaculty = async (id: number, studentIds: number[]) => {
+  const response = await api.post(`/teachers/${id}/assign-students`, { studentIds });
+  return response.data;
 };

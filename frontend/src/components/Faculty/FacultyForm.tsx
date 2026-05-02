@@ -14,7 +14,6 @@ const FacultyForm: React.FC<FacultyFormProps> = ({ isOpen, onClose, onSubmit, in
     name: '',
     email: '',
     department: '',
-    subject: '',
     phone: '',
     address: '',
     photoUrl: ''
@@ -24,31 +23,33 @@ const FacultyForm: React.FC<FacultyFormProps> = ({ isOpen, onClose, onSubmit, in
 
   useEffect(() => {
     if (initialData) {
+      const deptName = typeof initialData.department === 'object' && initialData.department !== null
+        ? (initialData.department as any).name
+        : initialData.department || '';
       setFormData({
         name: initialData.name,
         email: initialData.email || '',
-        department: initialData.department,
-        subject: initialData.subject,
-        phone: initialData.phone,
-        address: initialData.address,
-        photoUrl: initialData.photoUrl
+        department: deptName,
+        phone: initialData.phone || '',
+        address: initialData.address || '',
+        photoUrl: initialData.photoUrl || ''
       });
     } else {
-      setFormData({ name: '', email: '', department: '', subject: '', phone: '', address: '', photoUrl: '' });
+      setFormData({ name: '', email: '', department: '', phone: '', address: '', photoUrl: '' });
     }
     setError('');
   }, [initialData, isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev: FacultyInput) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!formData.name || !formData.department || !formData.phone) {
-      setError('Please fill in all required fields (Name, Department, Phone).');
+    if (!formData.name || !formData.phone) {
+      setError('Please fill in all required fields (Name, Phone).');
       return;
     }
     try {
@@ -107,8 +108,7 @@ const FacultyForm: React.FC<FacultyFormProps> = ({ isOpen, onClose, onSubmit, in
                 { label: 'Full Name *', name: 'name', type: 'text', placeholder: 'Dr. John Doe' },
                 { label: 'Email', name: 'email', type: 'email', placeholder: 'john@university.edu' },
                 { label: 'Phone *', name: 'phone', type: 'text', placeholder: '555-0101' },
-                { label: 'Department *', name: 'department', type: 'text', placeholder: 'Computer Science' },
-                { label: 'Subject', name: 'subject', type: 'text', placeholder: 'Data Structures' },
+                { label: 'Department', name: 'department', type: 'text', placeholder: 'Computer Science' },
                 { label: 'Address', name: 'address', type: 'text', placeholder: '123 University Ave' },
                 { label: 'Photo URL', name: 'photoUrl', type: 'text', placeholder: 'https://...' },
               ].map(field => (
@@ -126,7 +126,7 @@ const FacultyForm: React.FC<FacultyFormProps> = ({ isOpen, onClose, onSubmit, in
                       width: '100%', padding: '0.5rem 0.75rem',
                       background: '#1e293b', border: '1px solid #334155',
                       borderRadius: '6px', color: '#fff', fontSize: '0.9rem',
-                      outline: 'none'
+                      outline: 'none', boxSizing: 'border-box'
                     }}
                   />
                 </div>

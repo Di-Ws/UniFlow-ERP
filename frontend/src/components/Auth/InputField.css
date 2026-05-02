@@ -7,10 +7,10 @@
 }
 
 .input-label {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-main);
-  letter-spacing: 0.02em;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 2px;
 }
 
 .input-container {
@@ -22,32 +22,33 @@
 .auth-input {
   width: 100%;
   padding: 0.85rem 1rem;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--border-radius);
-  color: var(--text-main);
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #0f172a;
   font-size: 0.95rem;
-  transition: var(--transition);
+  font-weight: 500;
+  transition: all 0.2s ease;
   outline: none;
 }
 
 .auth-input:focus {
-  border-color: var(--primary-color);
-  background-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+  border-color: #6366f1;
+  background-color: white;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
 
 .auth-input::placeholder {
-  color: var(--text-muted);
+  color: #94a3b8;
 }
 
 .auth-input.input-error {
   border-color: #ef4444;
-  background-color: rgba(239, 68, 68, 0.05);
+  background-color: rgba(239, 68, 68, 0.02);
 }
 
 .auth-input.input-error:focus {
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
 }
 
 .password-toggle {
@@ -56,19 +57,20 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--text-muted);
+  color: #94a3b8;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition);
+  transition: all 0.2s ease;
 }
 
 .password-toggle:hover {
-  color: var(--text-main);
+  color: #6366f1;
 }
 
 .error-text {
   font-size: 0.75rem;
+  font-weight: 600;
   color: #ef4444;
-  margin-top: -0.25rem;
+  margin-top: 0.25rem;
 }

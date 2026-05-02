@@ -2,111 +2,137 @@ import { Response } from "express";
 import { prisma } from "../config/db";
 import { AuthRequest } from "../middleware/authMiddleware";
 
-export const addTeacher = async (req: AuthRequest, res: Response) => {
+export const addFaculty = async (req: AuthRequest, res: Response) => {
   try {
-    const teacher = await prisma.teacher.create({
-      data: req.body,
-      include: { students: true }
+    const { department, ...rest } = req.body;
+
+    // Find or create department
+    const dept = await prisma.department.upsert({
+      where: { name: department || "General" },
+      update: {},
+      create: { name: department || "General" }
     });
-    res.status(201).json(teacher);
+
+    const Faculty = await prisma.faculty.create({
+      data: {
+        ...rest,
+        departmentId: dept.id
+      },
+      include: { students: true, department: true }
+    });
+    res.status(201).json(Faculty);
   } catch (error: any) {
-    console.error("Error adding teacher:", error);
-    res.status(400).json({ message: "Error adding teacher", error: error.message });
+    console.error("Error adding Faculty:", error);
+    res.status(400).json({ message: "Error adding Faculty: " + error.message });
   }
 };
 
-export const getTeachers = async (req: AuthRequest, res: Response) => {
+export const getFacultys = async (req: AuthRequest, res: Response) => {
   try {
     const role = req.userRole;
     const userId = req.userId;
 
     let where: any = {};
     
-    if (role === 'Student') {
+    if (role === 'STUDENT') {
       // Find the student record matching this user
       const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
       const student = await prisma.student.findUnique({ 
         where: { email: user?.email || "" },
-        select: { teachers: { select: { id: true } } }
+        select: { faculty: { select: { id: true } } }
       });
-      const assignedTeacherIds = student?.teachers.map(t => t.id) || [];
-      where.id = { in: assignedTeacherIds };
+      const assignedFacultyIds = student?.faculty.map((f: any) => f.id) || [];
+      where.id = { in: assignedFacultyIds };
     }
 
     let query: any = { where };
 
-    if (role === 'Student') {
+    if (role === 'STUDENT') {
       // Limit fields for students
       query.select = {
         id: true,
         name: true,
         email: true,
         phone: true,
-        subject: true,
-        department: true,
-        designation: true
+        address: true,
+        photoUrl: true,
+        department: { select: { name: true } }
       };
     } else {
       // Include student assignments for Faculty/HOD
       query.include = {
         students: {
-          select: { id: true, name: true, branch: true, section: true }
-        }
+          select: { id: true, name: true, batch: true, year: true }
+        },
+        department: { select: { name: true } }
       };
     }
 
-    const teachers = await prisma.teacher.findMany(query);
-    res.json(teachers);
+    const Facultys = await prisma.faculty.findMany(query);
+    res.json(Facultys);
   } catch (error: any) {
-    console.error("Error fetching teachers:", error);
-    res.status(500).json({ message: "Error fetching teachers", error: error.message });
+    console.error("Error fetching Facultys:", error);
+    res.status(500).json({ message: "Error fetching Facultys", error: error.message });
   }
 };
 
-export const getTeacherById = async (req: AuthRequest, res: Response) => {
+export const getFacultyById = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const teacher = await prisma.teacher.findUnique({
+    const Faculty = await prisma.faculty.findUnique({
       where: { id: parseInt(id) },
       include: {
         students: {
-          select: { id: true, name: true, email: true, branch: true, section: true }
+          select: { id: true, name: true, email: true, batch: true, year: true }
         }
       }
     });
-    if (!teacher) {
-      return res.status(404).json({ message: "Teacher not found" });
+    if (!Faculty) {
+      return res.status(404).json({ message: "Faculty not found" });
     }
-    res.json(teacher);
+    res.json(Faculty);
   } catch (error: any) {
-    console.error("Error fetching teacher:", error);
-    res.status(500).json({ message: "Error fetching teacher", error: error.message });
+    console.error("Error fetching Faculty:", error);
+    res.status(500).json({ message: "Error fetching Faculty", error: error.message });
   }
 };
 
-export const updateTeacher = async (req: AuthRequest, res: Response) => {
+export const updateFaculty = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const teacher = await prisma.teacher.update({
+    const { department, students, ...rest } = req.body;
+
+    let data: any = { ...rest };
+
+    if (department) {
+      const dept = await prisma.department.upsert({
+        where: { name: department },
+        update: {},
+        create: { name: department }
+      });
+      data.departmentId = dept.id;
+    }
+
+    const Faculty = await prisma.faculty.update({
       where: { id: parseInt(id) },
-      data: req.body,
-      include: { students: true }
+      data,
+      include: { students: true, department: true }
     });
-    res.json(teacher);
+    res.json(Faculty);
   } catch (error: any) {
-    console.error("Error updating teacher:", error);
-    res.status(400).json({ message: "Error updating teacher", error: error.message });
+    console.error("Error updating Faculty:", error);
+    res.status(400).json({ message: "Error updating Faculty: " + error.message });
   }
 };
 
-export const deleteTeacher = async (req: AuthRequest, res: Response) => {
+export const deleteFaculty = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    await prisma.teacher.delete({ where: { id: parseInt(id) } });
-    res.json({ message: "Teacher deleted successfully" });
+    await prisma.faculty.delete({ where: { id: parseInt(id) } });
+    res.json({ message: "Faculty deleted successfully" });
   } catch (error: any) {
-    console.error("Error deleting teacher:", error);
-    res.status(500).json({ message: "Error deleting teacher", error: error.message });
+    console.error("Error deleting Faculty:", error);
+    res.status(500).json({ message: "Error deleting Faculty", error: error.message });
   }
 };
 
@@ -119,7 +145,7 @@ export const assignStudents = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ message: "studentIds must be an array" });
     }
 
-    const teacher = await prisma.teacher.update({
+    const Faculty = await prisma.faculty.update({
       where: { id: parseInt(id) },
       data: {
         students: {
@@ -128,11 +154,11 @@ export const assignStudents = async (req: AuthRequest, res: Response) => {
       },
       include: {
         students: {
-          select: { id: true, name: true, branch: true, section: true }
+          select: { id: true, name: true, batch: true, year: true }
         }
       }
     });
-    res.json(teacher);
+    res.json(Faculty);
   } catch (error: any) {
     console.error("Error assigning students:", error);
     res.status(400).json({ message: "Error assigning students", error: error.message });

@@ -4,7 +4,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  role: 'HOD' | 'Faculty' | 'Student';
+  role: 'HOD' | 'FACULTY' | 'STUDENT';
 }
 
 interface DecodedToken {
@@ -13,16 +13,16 @@ interface DecodedToken {
 }
 
 export const setAuthData = (token: string, user: User) => {
-  localStorage.setItem('token', token);
+  localStorage.setItem('accessToken', token);
   localStorage.setItem('user', JSON.stringify(user));
 };
 
 export const clearAuthData = () => {
-  localStorage.removeItem('token');
+  localStorage.removeItem('accessToken');
   localStorage.removeItem('user');
 };
 
-export const getToken = () => localStorage.getItem('token');
+export const getToken = () => localStorage.getItem('accessToken');
 
 export const getUser = (): User | null => {
   const userJson = localStorage.getItem('user');

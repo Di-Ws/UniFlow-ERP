@@ -12,7 +12,7 @@ export const addReport = async (req: Request, res: Response) => {
   }
 };
 
-export const getReportByStudentId = async (req: Request, res: Response) => {
+export const getReportBystudentId = async (req: Request, res: Response) => {
   try {
     const reports = await prisma.academicReport.findMany({
       where: { studentId: Number(req.params.studentId) }

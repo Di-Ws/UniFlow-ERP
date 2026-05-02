@@ -1,0 +1,8 @@
+/* CSS for Faculty Sidebar can go here if needed, but we used Tailwind classes primarily */
+.faculty-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.faculty-sidebar::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border-radius: 4px;
+}

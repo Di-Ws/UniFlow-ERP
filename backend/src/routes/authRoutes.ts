@@ -4,8 +4,10 @@ import {
   register,
   login,
   logout,
+  refresh,
   getCurrentUser,
-  updateProfile
+  updateProfile,
+  getDepartments
 } from "../controllers/authController";
 
 import {
@@ -28,6 +30,14 @@ POST /auth/login
 router.post(
   "/login",
   login
+);
+
+/*
+POST /auth/refresh
+*/
+router.post(
+  "/refresh",
+  refresh
 );
 
 /*
@@ -54,6 +64,11 @@ router.put(
   "/profile",
   verifyToken,
   updateProfile
+);
+
+router.get(
+  "/departments",
+  getDepartments
 );
 
 export default router;

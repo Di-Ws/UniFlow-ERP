@@ -1,0 +1,17 @@
+/* Custom scrollbar for faculty layout content */
+.faculty-dashboard::-webkit-scrollbar {
+  width: 6px;
+}
+.faculty-dashboard::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border-radius: 6px;
+}
+
+/* Hide scrollbar for horizontal scrolling elements */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}

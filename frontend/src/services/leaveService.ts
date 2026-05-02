@@ -44,16 +44,22 @@ export const getUserLeaves = async (): Promise<Leave[]> => {
 
 export const createLeave = async (data: LeaveInput): Promise<Leave> => {
   try {
-    const response = await api.post<Leave>('/leaves', data);
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const payload = {
+      ...data,
+      userId: user.id,
+      role: user.role
+    };
+    const response = await api.post<Leave>('/leaves', payload);
     return response.data;
   } catch (error) {
     throw new Error('Failed to submit leave request.');
   }
 };
 
-export const updateLeaveStatus = async (id: number, status: string): Promise<Leave> => {
+export const updateLeaveStatus = async (id: number, status: string, reviewedBy: string): Promise<Leave> => {
   try {
-    const response = await api.put<Leave>(`/leaves/${id}/status`, { status });
+    const response = await api.patch<Leave>(`/leaves/${id}`, { status, reviewedBy });
     return response.data;
   } catch (error) {
     throw new Error(`Failed to ${status.toLowerCase()} leave request.`);

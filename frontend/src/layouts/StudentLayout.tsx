@@ -5,12 +5,12 @@ import Navbar from '../components/Navbar/Navbar';
 
 const StudentLayout: React.FC = () => {
   return (
-    <div className="app-container">
+    <div className="flex min-h-screen bg-white dark:bg-dark-bg text-slate-900 dark:text-white transition-colors duration-300">
       <Sidebar />
-      <div className="main-content">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <Navbar />
-        <main className="page-content">
-          <div className="page-content-inner">
+        <main className="flex-1 overflow-y-auto p-6 md:p-8 hide-scrollbar">
+          <div className="w-full max-w-[1600px] mx-auto">
             <Outlet />
           </div>
         </main>

@@ -20,7 +20,7 @@ const Unauthorized: React.FC = () => {
       <div className="relative w-full max-w-md">
         {/* Glow Effects */}
         <div className="absolute -top-10 -left-10 w-40 h-40 bg-red-600/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-indigo-600/20 rounded-full blur-3xl animate-pulse delay-700" />
+        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl animate-pulse delay-700" />
 
         {/* Glassmorphic Card */}
         <div className="relative bg-slate-900/50 border border-slate-800 backdrop-blur-xl rounded-3xl p-10 shadow-2xl text-center">
@@ -35,7 +35,7 @@ const Unauthorized: React.FC = () => {
 
           <button
             onClick={handleBack}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-indigo-600/20 active:scale-95 transition-all duration-200"
+            className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-primary hover:bg-indigo-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-primary/20 active:scale-95 transition-all duration-200"
           >
             <ArrowLeft size={18} />
             Back to Dashboard

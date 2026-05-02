@@ -6,6 +6,13 @@ import { User, Mail, Phone, MapPin, GraduationCap, ArrowLeft, Trash, Edit } from
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import './StudentProfile.css';
 
+// Helper to safely render data
+const safeRender = (val: any): string => {
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'object') return val.name || JSON.stringify(val);
+  return String(val);
+};
+
 const StudentProfile: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -58,10 +65,10 @@ const StudentProfile: React.FC = () => {
               <User size={48} />
             </div>
             <div className="hero-info">
-              <h2>{student.name}</h2>
-              <p>{student.branch} • Section {student.section}</p>
-              <div className={`fee-status-pill ${student.feeStatus?.toLowerCase()}`}>
-                {student.feeStatus}
+              <h2>{safeRender(student.name)}</h2>
+              <p>{safeRender(student.batch || student.branch)} • Year {safeRender(student.year || student.semester || student.section)}</p>
+              <div className={`fee-status-pill ${String(student.feeStatus || '').toLowerCase()}`}>
+                {safeRender(student.feeStatus)}
               </div>
             </div>
           </div>
@@ -73,28 +80,28 @@ const StudentProfile: React.FC = () => {
                 <Mail size={16} />
                 <div className="info-content">
                   <label>Email</label>
-                  <span>{student.email}</span>
+                  <span>{safeRender(student.email)}</span>
                 </div>
               </div>
               <div className="info-item">
                 <Phone size={16} />
                 <div className="info-content">
                   <label>Phone</label>
-                  <span>{student.phone}</span>
+                  <span>{safeRender(student.phone)}</span>
                 </div>
               </div>
               <div className="info-item">
                 <MapPin size={16} />
                 <div className="info-content">
                   <label>Home Address</label>
-                  <span>{student.address}</span>
+                  <span>{safeRender(student.address)}</span>
                 </div>
               </div>
               <div className="info-item">
                 <GraduationCap size={16} />
                 <div className="info-content">
                   <label>Academic Standing</label>
-                  <span>Semester {student.semester}</span>
+                  <span>Batch {safeRender(student.batch)}</span>
                 </div>
               </div>
             </div>
@@ -105,7 +112,7 @@ const StudentProfile: React.FC = () => {
           <div className="stats-row">
             <div className="mini-stat">
               <label>Attendance</label>
-              <div className="mini-val">{student.attendance}%</div>
+              <div className="mini-val">{student.attendanceRate || student.attendance || 0}%</div>
             </div>
             <div className="mini-stat">
               <label>Avg. Marks</label>
@@ -136,10 +143,10 @@ const StudentProfile: React.FC = () => {
             <div className="subject-table">
               {reports.map(report => (
                 <div key={report.id} className="subject-row">
-                  <span className="subj-name">{report.subject}</span>
+                  <span className="subj-name">{safeRender(report.subject)}</span>
                   <div className="subj-marks">
-                    <span className="mark-val">{report.marks}</span>
-                    <span className={`grade-label grade-${report.grade?.toLowerCase()}`}>{report.grade}</span>
+                    <span className="mark-val">{safeRender(report.marks)}</span>
+                    <span className={`grade-label grade-${String(report.grade || '').toLowerCase()}`}>{safeRender(report.grade)}</span>
                   </div>
                 </div>
               ))}

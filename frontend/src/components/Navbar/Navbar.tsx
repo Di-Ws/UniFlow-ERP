@@ -1,34 +1,56 @@
-import React from 'react';
-import { Search, Bell, Sun } from 'lucide-react';
-import './Navbar.css';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Search, Bell, Home } from 'lucide-react';
+import ThemeToggle from '../ThemeToggle';
 
 const Navbar: React.FC = () => {
+  const location = useLocation();
+
+  const pathnames = location.pathname.split('/').filter(x => x);
+  const breadcrumbText = pathnames.length > 1 ? pathnames[1].charAt(0).toUpperCase() + pathnames[1].slice(1) : (pathnames.length === 1 ? pathnames[0].charAt(0).toUpperCase() + pathnames[0].slice(1) : 'Dashboard');
+
   return (
-    <header className="navbar">
-      <div className="navbar-title">
-        <h2>Analytics Dashboard</h2>
-      </div>
+    <nav className="bg-white dark:bg-dark-bg border-b border-gray-100 dark:border-white/5 h-[72px] flex items-center justify-between px-8 sticky top-0 z-20 w-full">
       
-      <div className="navbar-actions">
-        <div className="search-bar">
-          <Search size={18} className="search-icon" />
-          <input type="text" placeholder="Search..." />
+      {/* Breadcrumbs */}
+      <div className="flex items-center text-sm font-medium text-gray-500 dark:text-slate-400">
+        <Home size={14} className="mr-2" />
+        <span>Home</span>
+        <span className="mx-2 text-gray-300 dark:text-slate-600">›</span>
+        <span className="text-gray-900 dark:text-white">{breadcrumbText}</span>
+      </div>
+
+      {/* Global Search */}
+      <div className="hidden md:flex flex-1 max-w-md mx-8">
+        <div className="relative w-full">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+          <input 
+            type="text" 
+            placeholder="Search anything..." 
+            className="w-full bg-gray-50 dark:bg-dark-card border border-gray-200 dark:border-white/5 rounded-full py-2 pl-10 pr-4 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-sm"
+          />
         </div>
-        
-        <button className="icon-btn action-btn">
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center gap-4">
+        {/* Notification Bell */}
+        <button className="relative p-2 rounded-full text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">
           <Bell size={20} />
-          <span className="badge"></span>
-        </button>
-        
-        <button className="icon-btn action-btn active-theme">
-          <Sun size={20} />
+          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-primary rounded-full border-2 border-white dark:border-[#0A0D14]"></span>
         </button>
 
-        <div className="nav-user-avatar">
-          <img src="https://i.pravatar.cc/150?u=admin" alt="User Avatar" />
-        </div>
+        {/* Theme Toggle */}
+        <ThemeToggle />
+
+        <div className="w-px h-6 bg-gray-200 dark:bg-slate-700 mx-1"></div>
+
+        {/* Profile Avatar */}
+        <button className="w-8 h-8 rounded-full overflow-hidden border border-gray-200 dark:border-white/10 hover:ring-2 hover:ring-primary/50 transition-all">
+          <img src="https://i.pravatar.cc/150?u=user" alt="Profile" className="w-full h-full object-cover" />
+        </button>
       </div>
-    </header>
+    </nav>
   );
 };
 

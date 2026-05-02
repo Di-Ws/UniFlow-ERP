@@ -10,6 +10,6 @@ router.get("/user", verifyToken, controller.getUserLeaves);
 router.post("/", verifyToken, controller.createLeave);
 
 // Administrative actions - HOD only
-router.put("/:id/status", verifyToken, requireRole(['HOD']), controller.updateLeaveStatus);
+router.patch("/:id", verifyToken, requireRole(['HOD']), controller.updateLeaveStatus);
 
 export default router;

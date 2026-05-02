@@ -47,9 +47,9 @@ const StudentList: React.FC = () => {
               key={student.id} 
               style={{ border: '1px solid #ddd', padding: '1rem', margin: '0.5rem 0', borderRadius: '5px' }}
             >
-              <strong>{student.name}</strong> - {student.branch} (Section: {student.section})
+              <strong>{student.name}</strong> - Batch: {student.batch} (Year {student.year})
               <br />
-              <small>Email: {student.email} | Attendance: {student.attendance}% | Fees: {student.feeStatus}</small>
+              <small>Email: {student.email} | Attendance: {student.attendanceRate}% | Fees: {student.feeStatus}</small>
             </li>
           ))}
         </ul>

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Network } from 'lucide-react';
+import { Network, Book } from 'lucide-react';
 import InputField from '../../components/Auth/InputField';
-import { registerAPI } from '../../api/auth';
+import { registerAPI, getDepartmentsAPI } from '../../api/auth';
 import '../../styles/Auth.css';
 
 const Register: React.FC = () => {
@@ -12,11 +12,26 @@ const Register: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'Faculty' // Default role
+    role: 'Faculty', // Default role
+    departmentId: ''
   });
+  const [departments, setDepartments] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
+
+  useEffect(() => {
+    const fetchDepts = async () => {
+      try {
+        const data = await getDepartmentsAPI();
+        setDepartments(data);
+        if (data.length > 0) setFormData(prev => ({ ...prev, departmentId: data[0].id.toString() }));
+      } catch (err) {
+        console.error("Failed to load departments");
+      }
+    };
+    fetchDepts();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -39,14 +54,10 @@ const Register: React.FC = () => {
     // Detailed Validation
     const newErrors: Record<string, string> = {};
     
-    // Name validation
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters long';
     }
     
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email) {
       newErrors.email = 'Email is required';
@@ -54,7 +65,6 @@ const Register: React.FC = () => {
       newErrors.email = 'Please enter a valid email address';
     }
     
-    // Password validation
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
     if (!formData.password) {
       newErrors.password = 'Password is required';
@@ -62,9 +72,12 @@ const Register: React.FC = () => {
       newErrors.password = 'Password must be at least 8 characters, with letters and numbers';
     }
     
-    // Confirm Password
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    if (formData.role !== 'HOD' && !formData.departmentId) {
+      newErrors.departmentId = 'Please select a department';
     }
     
     if (Object.keys(newErrors).length > 0) {
@@ -78,23 +91,15 @@ const Register: React.FC = () => {
         name: formData.name, 
         email: formData.email, 
         password: formData.password,
-        role: formData.role 
+        role: formData.role.toUpperCase(),
+        registrationMetadata: {
+          departmentId: formData.departmentId
+        }
       });
       navigate('/login');
     } catch (err: any) {
-      // Map server message to correct field or general state
       const msg = err.response?.data?.message || err.message || 'Failed to register';
-      
-      const lowerMsg = String(msg).toLowerCase();
-      if (lowerMsg.includes('email')) {
-        setErrors({ email: String(msg) });
-      } else if (lowerMsg.includes('password')) {
-        setErrors({ password: String(msg) });
-      } else if (lowerMsg.includes('name')) {
-        setErrors({ name: String(msg) });
-      } else {
-        setServerError(String(msg));
-      }
+      setServerError(String(msg));
     } finally {
       setIsLoading(false);
     }
@@ -134,28 +139,56 @@ const Register: React.FC = () => {
             error={errors.email}
           />
 
-          <div className="input-group" style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#94a3b8', marginBottom: '0.5rem' }}>Register As</label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              style={{
-                width: '100%',
-                padding: '0.75rem 1rem',
-                background: '#1e293b',
-                border: '1px solid #334155',
-                borderRadius: '8px',
-                color: '#f8fafc',
-                fontSize: '0.9rem',
-                outline: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="HOD">HOD (Admin)</option>
-              <option value="Faculty">Faculty</option>
-              <option value="Student">Student</option>
-            </select>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div className="input-group">
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#94a3b8', marginBottom: '0.5rem' }}>Register As</label>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  background: '#1e293b',
+                  border: '1px solid #334155',
+                  borderRadius: '8px',
+                  color: '#f8fafc',
+                  fontSize: '0.9rem',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="HOD">HOD (Admin)</option>
+                <option value="Faculty">Faculty</option>
+                <option value="Student">Student</option>
+              </select>
+            </div>
+
+            {formData.role !== 'HOD' && (
+              <div className="input-group">
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#94a3b8', marginBottom: '0.5rem' }}>Department</label>
+                <select
+                  name="departmentId"
+                  value={formData.departmentId}
+                  onChange={handleChange}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    background: '#1e293b',
+                    border: '1px solid #334155',
+                    borderRadius: '8px',
+                    color: '#f8fafc',
+                    fontSize: '0.9rem',
+                    outline: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {departments.map(dept => (
+                    <option key={dept.id} value={dept.id}>{dept.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           
           <InputField

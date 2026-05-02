@@ -1,7 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { StudentInput } from '../../services/studentService';
 import { Student } from '../../types/student';
+
+// StudentInput aligned to the new schema
+interface StudentInput {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  departmentId: number;
+  batch: string;
+  year: number;
+  semester: number;
+  attendanceRate: number;
+  feeStatus: string;
+}
 
 interface StudentFormProps {
   isOpen: boolean;
@@ -16,13 +29,14 @@ const StudentForm: React.FC<StudentFormProps> = ({ isOpen, onClose, onSubmit, in
     email: '',
     phone: '',
     address: '',
-    branch: '', // Used as Department conceptually
-    section: '',
+    departmentId: 1,
+    batch: '',
+    year: 1,
     semester: 1,
-    attendance: 100,
+    attendanceRate: 100,
     feeStatus: 'Paid'
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -33,24 +47,18 @@ const StudentForm: React.FC<StudentFormProps> = ({ isOpen, onClose, onSubmit, in
         email: initialData.email,
         phone: initialData.phone || '',
         address: initialData.address || '',
-        branch: initialData.branch,
-        section: initialData.section,
+        departmentId: initialData.departmentId || 1,
+        batch: initialData.batch || '',
+        year: initialData.year || 1,
         semester: initialData.semester,
-        attendance: initialData.attendance,
+        attendanceRate: initialData.attendanceRate || 0,
         feeStatus: initialData.feeStatus
       });
     } else {
-      // Reset form
       setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        address: '',
-        branch: '',
-        section: '',
-        semester: 1,
-        attendance: 100,
-        feeStatus: 'Paid'
+        name: '', email: '', phone: '', address: '',
+        departmentId: 1, batch: '', year: 1, semester: 1,
+        attendanceRate: 100, feeStatus: 'Paid'
       });
     }
     setError('');
@@ -58,26 +66,23 @@ const StudentForm: React.FC<StudentFormProps> = ({ isOpen, onClose, onSubmit, in
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: name === 'attendance' || name === 'semester' ? Number(value) : value
+      [name]: ['attendanceRate', 'semester', 'year', 'departmentId'].includes(name) ? Number(value) : value
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    // Basic Local validation
-    if (!formData.name || !formData.email || !formData.branch) {
-      setError('Please fill in all required fields.');
+    if (!formData.name || !formData.email || !formData.batch) {
+      setError('Please fill in all required fields (Name, Email, Batch).');
       return;
     }
-    
     try {
       setIsSubmitting(true);
       await onSubmit(formData);
-      onClose(); // Automatically close on success
+      onClose();
     } catch (err: any) {
       setError(err.message || 'Operation failed. Please try again.');
     } finally {
@@ -90,7 +95,7 @@ const StudentForm: React.FC<StudentFormProps> = ({ isOpen, onClose, onSubmit, in
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm shadow-2xl">
       <div className="w-full max-w-md bg-[#111827] border border-gray-800 rounded-xl overflow-hidden shadow-2xl">
-        
+
         {/* Header */}
         <div className="flex justify-between items-center p-5 border-b border-gray-800 bg-[#0f172a]">
           <h2 className="text-xl font-semibold text-white">
@@ -108,105 +113,63 @@ const StudentForm: React.FC<StudentFormProps> = ({ isOpen, onClose, onSubmit, in
               {error}
             </div>
           )}
-          
+
           <form id="student-form" onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-1">Full Name *</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="Student Name"
-              />
+              <input type="text" name="name" value={formData.name} onChange={handleChange}
+                className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="Student Name" />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-1">Email Address *</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="student@university.edu"
-              />
+              <input type="email" name="email" value={formData.email} onChange={handleChange}
+                className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="student@university.edu" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Phone Number *</label>
-                <input
-                  type="text"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="555-0101"
-                />
+                <label className="block text-sm font-medium text-gray-400 mb-1">Phone *</label>
+                <input type="text" name="phone" value={formData.phone} onChange={handleChange}
+                  className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="555-0101" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Address *</label>
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="123 College St"
-                />
+                <label className="block text-sm font-medium text-gray-400 mb-1">Address</label>
+                <input type="text" name="address" value={formData.address} onChange={handleChange}
+                  className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="123 College St" />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Department *</label>
-                <input
-                  type="text"
-                  name="branch"
-                  value={formData.branch}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="e.g. Computer Science"
-                />
+                <label className="block text-sm font-medium text-gray-400 mb-1">Batch *</label>
+                <input type="text" name="batch" value={formData.batch} onChange={handleChange}
+                  className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                  placeholder="e.g. 2022-2026" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Section</label>
-                <input
-                  type="text"
-                  name="section"
-                  value={formData.section}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="e.g. A"
-                />
+                <label className="block text-sm font-medium text-gray-400 mb-1">Year</label>
+                <input type="number" name="year" min={1} max={4} value={formData.year} onChange={handleChange}
+                  className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Attendance (%)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  name="attendance"
-                  value={formData.attendance}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                <label className="block text-sm font-medium text-gray-400 mb-1">Semester</label>
+                <input type="number" name="semester" min={1} max={8} value={formData.semester} onChange={handleChange}
+                  className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-1">Fees Status</label>
-                <select
-                  name="feeStatus"
-                  value={formData.feeStatus}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
+                <select name="feeStatus" value={formData.feeStatus} onChange={handleChange}
+                  className="w-full px-3 py-2 bg-[#1e293b] border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary">
                   <option value="Paid">Paid</option>
-                  <option value="Pending">Pending</option>
+                  <option value="Unpaid">Unpaid</option>
                 </select>
               </div>
             </div>
@@ -215,23 +178,15 @@ const StudentForm: React.FC<StudentFormProps> = ({ isOpen, onClose, onSubmit, in
 
         {/* Footer */}
         <div className="p-5 border-t border-gray-800 bg-[#0f172a] flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors"
-          >
+          <button type="button" onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
             Cancel
           </button>
-          <button
-            form="student-form"
-            type="submit"
-            disabled={isSubmitting}
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
+          <button form="student-form" type="submit" disabled={isSubmitting}
+            className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-md hover:bg-primary focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             {isSubmitting ? 'Processing...' : initialData ? 'Save Changes' : 'Add Student'}
           </button>
         </div>
-        
       </div>
     </div>
   );

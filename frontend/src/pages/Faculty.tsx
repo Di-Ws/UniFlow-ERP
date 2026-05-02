@@ -1,28 +1,28 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getFaculty, createFaculty, updateFaculty, deleteFaculty, assignStudentsToFaculty, Faculty } from '../services/facultyService';
+import { getFaculty, createFaculty, updateFaculty, deleteFaculty, assignStudentsToFaculty, Faculty as FacultyMember } from '../services/facultyService';
 import { getStudents } from '../services/studentService';
 import { Student } from '../types/student';
-import { TeacherCard } from '../components/Common/Cards';
+import { FacultyCard } from '../components/Common/Cards';
 import FacultyForm from '../components/Faculty/FacultyForm';
 import { Plus, Search, X } from 'lucide-react';
-import './Teachers.css';
+import './Faculty.css';
 
 import { getUserRole } from '../utils/auth';
 
-const Teachers: React.FC = () => {
+const Faculty: React.FC = () => {
   const role = getUserRole();
-  const [faculty, setFaculty] = useState<Faculty[]>([]);
+  const [faculty, setFaculty] = useState<FacultyMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Modal states
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingFaculty, setEditingFaculty] = useState<Faculty | null>(null);
+  const [editingFaculty, setEditingFaculty] = useState<FacultyMember | null>(null);
 
   // Assign students modal
   const [isAssignOpen, setIsAssignOpen] = useState(false);
-  const [assignTarget, setAssignTarget] = useState<Faculty | null>(null);
+  const [assignTarget, setAssignTarget] = useState<FacultyMember | null>(null);
   const [allStudents, setAllStudents] = useState<Student[]>([]);
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
 
@@ -45,11 +45,15 @@ const Teachers: React.FC = () => {
 
   const filteredFaculty = useMemo(() => {
     const q = searchQuery.toLowerCase();
-    return faculty.filter(f =>
-      f.name.toLowerCase().includes(q) ||
-      (f.department && f.department.toLowerCase().includes(q)) ||
-      (f.subject && f.subject.toLowerCase().includes(q))
-    );
+    return faculty.filter(f => {
+      const deptName = typeof f.department === 'object' && f.department !== null
+        ? (f.department as any).name
+        : f.department;
+      return (
+        f.name.toLowerCase().includes(q) ||
+        (deptName && String(deptName).toLowerCase().includes(q))
+      );
+    });
   }, [faculty, searchQuery]);
 
   // Handlers
@@ -58,7 +62,7 @@ const Teachers: React.FC = () => {
     setIsFormOpen(true);
   };
 
-  const handleEditClick = (f: Faculty) => {
+  const handleEditClick = (f: FacultyMember) => {
     setEditingFaculty(f);
     setIsFormOpen(true);
   };
@@ -83,7 +87,7 @@ const Teachers: React.FC = () => {
     fetchFaculty();
   };
 
-  const handleAssignClick = async (f: Faculty) => {
+  const handleAssignClick = async (f: FacultyMember) => {
     setAssignTarget(f);
     setSelectedStudentIds(f.students?.map(s => s.id) || []);
     try {
@@ -115,12 +119,12 @@ const Teachers: React.FC = () => {
   const isHod = role === 'HOD';
 
   return (
-    <div className="teachers-page">
+    <div className="Faculty-page">
       {/* Page Header */}
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
         <div className="header-info">
-          <h1>{role === 'Student' ? 'My Teachers' : 'Faculty Management'}</h1>
-          <p>{role === 'Student' ? 'View details of faculty members assigned to you' : 'Manage faculty members, assign students, and track workloads'}</p>
+          <h1>{role === 'STUDENT' ? 'My Faculty' : 'Faculty Management'}</h1>
+          <p>{role === 'STUDENT' ? 'View details of faculty members assigned to you' : 'Manage faculty members, assign students, and track workloads'}</p>
         </div>
         {isHod && (
           <button onClick={handleAddClick} style={{
@@ -174,11 +178,11 @@ const Teachers: React.FC = () => {
           <p style={{ color: '#9ca3af' }}>{searchQuery ? 'Try adjusting your search.' : 'There are currently no faculty assigned to you.'}</p>
         </div>
       ) : (
-        <div className="teachers-grid">
+        <div className="Faculty-grid">
           {filteredFaculty.map(f => (
-            <TeacherCard
+            <FacultyCard
               key={f.id}
-              teacher={f}
+              Faculty={f}
               onEdit={isHod ? handleEditClick : undefined}
               onDelete={isHod ? handleDeleteClick : undefined}
               onAssign={isHod ? handleAssignClick : undefined}
@@ -242,7 +246,7 @@ const Teachers: React.FC = () => {
                     <div>
                       <span style={{ color: '#e5e7eb', fontSize: '0.9rem', fontWeight: 500 }}>{s.name}</span>
                       <span style={{ color: '#9ca3af', fontSize: '0.8rem', marginLeft: '0.5rem' }}>
-                        {s.branch} – Sec {s.section}
+                        {s.batch} – Yr {s.year}
                       </span>
                     </div>
                   </label>
@@ -270,4 +274,4 @@ const Teachers: React.FC = () => {
   );
 };
 
-export default Teachers;
+export default Faculty;

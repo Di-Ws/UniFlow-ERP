@@ -1,104 +1,150 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('Seeding data...');
 
-  // 0. Create Admin User
-  const adminPassword = await bcrypt.hash('Admin@123', 10);
-  await prisma.user.upsert({
-    where: { email: 'admin@university.edu' },
+  // 0. Create Departments
+  const csDept = await prisma.department.upsert({
+    where: { name: 'Computer Science' },
     update: {},
+    create: { name: 'Computer Science' }
+  });
+
+  const ecDept = await prisma.department.upsert({
+    where: { name: 'Electronics' },
+    update: {},
+    create: { name: 'Electronics' }
+  });
+
+  // 1. Create Admin User (HOD of CS)
+  const adminPassword = await bcrypt.hash('Admin@123', 10);
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@university.edu' },
+    update: { role: Role.HOD },
     create: {
       name: 'System Admin',
       email: 'admin@university.edu',
       password: adminPassword,
+      role: Role.HOD
     },
   });
 
-  // 1. Create Sample Students
-  const students = await Promise.all([
-    prisma.student.upsert({
-      where: { email: 'john@university.edu' },
-      update: {},
-      create: {
-        name: 'John Smith',
-        email: 'john@university.edu',
-        phone: '123-456-7890',
-        address: '123 University Ave',
-        branch: 'Computer Science',
-        section: 'A',
-        semester: 4,
-        attendance: 85.5,
-        feeStatus: 'Paid',
-      },
-    }),
-    prisma.student.upsert({
-      where: { email: 'sarah@university.edu' },
-      update: {},
-      create: {
-        name: 'Sarah Johnson',
-        email: 'sarah@university.edu',
-        phone: '098-765-4321',
-        address: '456 College Blvd',
-        branch: 'Electronics',
-        section: 'B',
-        semester: 6,
-        attendance: 92.0,
-        feeStatus: 'Unpaid',
-      },
-    }),
-  ]);
+  // Link Admin to CS Dept as HOD
+  await prisma.department.update({
+    where: { id: csDept.id },
+    data: { hodId: admin.id }
+  });
 
-  console.log('Students created:', students.length);
+  // 2. Create Faculty Users and Profiles
+  const facultyPassword = await bcrypt.hash('Faculty@123', 10);
+  
+  const faculty1User = await prisma.user.upsert({
+    where: { email: 'alan@university.edu' },
+    update: { role: Role.FACULTY },
+    create: {
+      name: 'Dr. Alan Turing',
+      email: 'alan@university.edu',
+      password: facultyPassword,
+      role: Role.FACULTY
+    }
+  });
 
-  // 2. Create Sample Teachers
-  const teachers = await Promise.all([
-    prisma.teacher.create({
-      data: {
-        name: 'Dr. Alan Turing',
-        subject: 'Algorithms',
-        phone: '555-0101',
-        address: 'Mathematics Dept',
-        photoUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
-      },
-    }),
-    prisma.teacher.create({
-      data: {
-        name: 'Dr. Ada Lovelace',
-        subject: 'Programming',
-        phone: '555-0202',
-        address: 'Computer Science Dept',
-        photoUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
-      },
-    }),
-  ]);
+  const faculty1 = await prisma.faculty.upsert({
+    where: { email: 'alan@university.edu' },
+    update: {},
+    create: {
+      userId: faculty1User.id,
+      name: 'Dr. Alan Turing',
+      email: 'alan@university.edu',
+      phone: '555-0101',
+      address: 'Mathematics Dept',
+      departmentId: csDept.id,
+      photoUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
+    }
+  });
 
-  console.log('Teachers created:', teachers.length);
+  const faculty2User = await prisma.user.upsert({
+    where: { email: 'ada@university.edu' },
+    update: { role: Role.FACULTY },
+    create: {
+      name: 'Dr. Ada Lovelace',
+      email: 'ada@university.edu',
+      password: facultyPassword,
+      role: Role.FACULTY
+    }
+  });
 
-  // 3. Create Sample Events
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const faculty2 = await prisma.faculty.upsert({
+    where: { email: 'ada@university.edu' },
+    update: {},
+    create: {
+      userId: faculty2User.id,
+      name: 'Dr. Ada Lovelace',
+      email: 'ada@university.edu',
+      phone: '555-0202',
+      address: 'Computer Science Dept',
+      departmentId: csDept.id,
+      photoUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
+    }
+  });
 
-  const events = await Promise.all([
-    prisma.event.create({
-      data: {
-        title: 'Annual Tech Symposium',
-        description: 'A day of innovation and showcases.',
-        eventDate: tomorrow,
-      },
-    }),
-    prisma.event.create({
-      data: {
-        title: 'Mid-Semester Break',
-        description: 'University closed for one week.',
-        eventDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      },
-    }),
-  ]);
+  // 3. Create Courses
+  const algoCourse = await prisma.course.upsert({
+    where: { code: 'CS101' },
+    update: {},
+    create: {
+      name: 'Algorithms',
+      code: 'CS101',
+      departmentId: csDept.id,
+      faculty: { connect: { id: faculty1.id } }
+    }
+  });
 
-  console.log('Events created:', events.length);
+  const progCourse = await prisma.course.upsert({
+    where: { code: 'CS102' },
+    update: {},
+    create: {
+      name: 'Programming',
+      code: 'CS102',
+      departmentId: csDept.id,
+      faculty: { connect: { id: faculty2.id } }
+    }
+  });
+
+  // 4. Create Students
+  const studentPassword = await bcrypt.hash('Student@123', 10);
+  
+  const student1User = await prisma.user.upsert({
+    where: { email: 'john@university.edu' },
+    update: { role: Role.STUDENT },
+    create: {
+      name: 'John Smith',
+      email: 'john@university.edu',
+      password: studentPassword,
+      role: Role.STUDENT
+    }
+  });
+
+  await prisma.student.upsert({
+    where: { email: 'john@university.edu' },
+    update: {},
+    create: {
+      userId: student1User.id,
+      name: 'John Smith',
+      email: 'john@university.edu',
+      phone: '123-456-7890',
+      address: '123 University Ave',
+      departmentId: csDept.id,
+      batch: '2022-2026',
+      year: 2,
+      semester: 4,
+      faculty: { connect: { id: faculty1.id } },
+      courses: { connect: [{ id: algoCourse.id }, { id: progCourse.id }] }
+    },
+  });
+
   console.log('Seeding completed successfully!');
 }
 

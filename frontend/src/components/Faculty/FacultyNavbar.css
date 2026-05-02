@@ -1,0 +1,9 @@
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1.25rem;
+  height: 100%;
+  border-top: 2px solid transparent;
+  transition: all 0.2s ease;
+}

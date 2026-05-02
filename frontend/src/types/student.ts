@@ -4,12 +4,15 @@ export interface Student {
   email: string;
   phone: string;
   address: string;
-  department?: string; // Optional if not all existing records have it
-  section: string;
-  branch: string;      // Matching Prisma schema currently
-  semester: number;    // Matching Prisma schema currently
-  attendance: number;
-  feeStatus: string;   // Matching Prisma schema currently
+  departmentId: number;
+  department?: { name: string } | string; // Can be populated or just an ID
+  batch: string;      // e.g. "2022-2026"
+  year: number;       // 1, 2, 3, 4
+  semester: number;
+  attendanceRate: number;
+  feeStatus: string;
+  faculty?: any[];
+  courses?: any[];
 }
 
 export interface ApiResponse<T> {

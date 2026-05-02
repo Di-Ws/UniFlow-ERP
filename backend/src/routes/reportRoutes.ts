@@ -5,6 +5,6 @@ import { verifyToken } from "../middleware/authMiddleware";
 const router = express.Router();
 
 router.post("/", verifyToken, controller.addReport);
-router.get("/:studentId", verifyToken, controller.getReportByStudentId);
+router.get("/:studentId", verifyToken, controller.getReportBystudentId);
 
 export default router;

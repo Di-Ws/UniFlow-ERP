@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Network } from 'lucide-react';
 import InputField from '../../components/Auth/InputField';
-import { loginAPI } from '../../api/auth';
-import { setAuthData } from '../../utils/auth';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/Auth.css';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { login, user: currentUser } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -15,6 +15,13 @@ const Login: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
+
+  // Redirect if already logged in
+  React.useEffect(() => {
+    if (currentUser) {
+      navigate(`/${currentUser.role.toLowerCase()}/dashboard`);
+    }
+  }, [currentUser, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -45,14 +52,8 @@ const Login: React.FC = () => {
 
     try {
       setIsLoading(true);
-      const data = await loginAPI(formData);
-      if (data.token) {
-        setAuthData(data.token, data.user);
-        
-        // Role-based redirection
-        const role = data.user.role.toLowerCase();
-        navigate(`/${role}/dashboard`);
-      }
+      await login(formData);
+      // useAuth's login will update the state, and the useEffect above will handle redirection
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message || 'Failed to login';
       const lowerMsg = String(msg).toLowerCase();

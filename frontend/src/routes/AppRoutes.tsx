@@ -9,15 +9,18 @@ import StudentLayout from '../layouts/StudentLayout';
 
 // Pages
 import Dashboard from '../pages/Dashboard/Dashboard';
+import FacultyDashboard from '../pages/Dashboard/FacultyDashboard';
 import Login from '../pages/Login/Login';
 import Register from '../pages/Register/Register';
 import Students from '../pages/Students';
-import Teachers from '../pages/Teachers';
+import Faculty from '../pages/Faculty';
 import Leaves from '../pages/Leaves';
 import Settings from '../pages/Settings';
 import Profile from '../pages/Profile/Profile';
 import StudentProfile from '../pages/StudentProfile';
+import StudentPortal from '../pages/Profile/StudentPortal';
 import Unauthorized from '../pages/Unauthorized';
+import AttendancePage from '../pages/Attendance/Attendance';
 import { Events } from '../pages/PlaceholderPages';
 
 const AppRoutes: React.FC = () => {
@@ -40,8 +43,9 @@ const AppRoutes: React.FC = () => {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="students" element={<Students />} />
         <Route path="students/:id" element={<StudentProfile />} />
-        <Route path="faculty" element={<Teachers />} />
+        <Route path="faculty" element={<Faculty />} />
         <Route path="leaves" element={<Leaves />} />
+        <Route path="attendance" element={<AttendancePage />} />
         <Route path="events" element={<Events />} />
         <Route path="settings" element={<Settings />} />
         <Route path="profile" element={<Profile />} />
@@ -52,14 +56,15 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/faculty"
         element={
-          <ProtectedRoute allowedRoles={['Faculty']}>
+          <ProtectedRoute allowedRoles={['FACULTY']}>
             <FacultyLayout />
           </ProtectedRoute>
         }
       >
-        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="dashboard" element={<FacultyDashboard />} />
         <Route path="students" element={<Students />} />
         <Route path="leaves" element={<Leaves />} />
+        <Route path="attendance" element={<AttendancePage />} />
         <Route path="events" element={<Events />} />
         <Route path="settings" element={<Settings />} />
         <Route path="profile" element={<Profile />} />
@@ -70,13 +75,13 @@ const AppRoutes: React.FC = () => {
       <Route
         path="/student"
         element={
-          <ProtectedRoute allowedRoles={['Student']}>
+          <ProtectedRoute allowedRoles={['STUDENT']}>
             <StudentLayout />
           </ProtectedRoute>
         }
       >
         <Route path="dashboard" element={<Dashboard />} />
-        <Route path="profile" element={<StudentProfile />} />
+        <Route path="profile" element={<StudentPortal />} />
         <Route path="leaves" element={<Leaves />} />
         <Route path="events" element={<Events />} />
         <Route index element={<Navigate to="dashboard" replace />} />

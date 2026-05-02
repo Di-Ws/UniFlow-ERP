@@ -22,7 +22,7 @@ const LeaveForm: React.FC<LeaveFormProps> = ({ isOpen, onClose, onSubmit }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev: LeaveInput) => ({ ...prev, [name]: value }));
   };
 
   // Calculate leave duration
@@ -40,6 +40,10 @@ const LeaveForm: React.FC<LeaveFormProps> = ({ isOpen, onClose, onSubmit }) => {
 
     if (!formData.leaveType || !formData.startDate || !formData.endDate || !formData.reason) {
       setError('Please fill in all fields.');
+      return;
+    }
+    if (formData.reason.trim().length < 10) {
+      setError('Reason must be at least 10 characters long.');
       return;
     }
     if (new Date(formData.endDate) < new Date(formData.startDate)) {
@@ -150,7 +154,7 @@ const LeaveForm: React.FC<LeaveFormProps> = ({ isOpen, onClose, onSubmit }) => {
             {/* Reason */}
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', color: '#9ca3af', marginBottom: '0.25rem' }}>Reason *</label>
-              <textarea name="reason" value={formData.reason} onChange={handleChange} rows={3} placeholder="Describe your reason for leave..." style={{
+              <textarea name="reason" value={formData.reason} onChange={handleChange} rows={3} minLength={10} placeholder="Describe your reason for leave (min 10 characters)..." style={{
                 width: '100%', padding: '0.5rem 0.75rem',
                 background: '#1e293b', border: '1px solid #334155',
                 borderRadius: '6px', color: '#fff', fontSize: '0.9rem', outline: 'none',

@@ -56,6 +56,10 @@ export const createLeave = async (req: any, res: Response) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    if (reason.trim().length < 10) {
+      return res.status(400).json({ message: "Reason must be at least 10 characters long" });
+    }
+
     if (new Date(endDate) < new Date(startDate)) {
       return res.status(400).json({ message: "End date must be after start date" });
     }
@@ -89,18 +93,19 @@ export const updateLeaveStatus = async (req: any, res: Response) => {
     }
 
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, reviewedBy } = req.body;
 
+    const normalizedStatus = status?.toUpperCase();
     const validStatuses = ["APPROVED", "REJECTED"];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({ message: "Status must be 'APPROVED' or 'REJECTED'" });
+    if (!validStatuses.includes(normalizedStatus)) {
+      return res.status(400).json({ message: "Status must be 'Approved' or 'Rejected'" });
     }
 
     const leave = await prisma.leave.update({
       where: { id: parseInt(id) },
       data: {
-        status: status as any,
-        approvedById: userId
+        status: normalizedStatus as any,
+        approvedById: userId // Still using token for security, but body could be used if preferred
       },
       include: {
         approvedBy: {

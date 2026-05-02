@@ -1,12 +1,12 @@
 import api from './axiosConfig';
 
-export const getTeachersAPI = async () => {
-  const response = await api.get('/teachers');
+export const getFacultiesAPI = async () => {
+  const response = await api.get('/faculty');
   return response.data;
 };
 
-export const createTeacherAPI = async (data: any) => {
-  const response = await api.post('/teachers', data);
+export const createFacultyAPI = async (data: any) => {
+  const response = await api.post('/faculty', data);
   return response.data;
 };
 

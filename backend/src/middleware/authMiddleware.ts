@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { prisma } from "../config/db";
 
-const JWT_SECRET = "secret123";
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || "access_secret";
 
 // Extend Express Request type
 export interface AuthRequest extends Request {
@@ -17,34 +17,26 @@ export const verifyToken = async (
 ) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader) {
-    return res.status(401).json({ message: "No token" });
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "No token provided" });
   }
 
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded: any = jwt.verify(token, JWT_SECRET);
+    const decoded: any = jwt.verify(token, ACCESS_TOKEN_SECRET);
     req.userId = decoded.id;
-    
-    // Fetch role to ensure it's up to date
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
-      select: { role: true }
-    });
-    
-    if (!user) {
-      return res.status(401).json({ message: "User not found" });
-    }
-    
-    req.userRole = user.role;
+    req.userRole = decoded.role;
     next();
-  } catch (error) {
+  } catch (error: any) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token expired", code: "TOKEN_EXPIRED" });
+    }
     res.status(401).json({ message: "Invalid token" });
   }
 };
 
-export const requireRole = (allowedRoles: string[]) => {
+export const authorizeRoles = (...allowedRoles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.userRole) {
       return res.status(401).json({ message: "Not authenticated" });
@@ -59,3 +51,6 @@ export const requireRole = (allowedRoles: string[]) => {
     next();
   };
 };
+
+// Legacy alias for backward compatibility
+export const requireRole = (allowedRoles: string[]) => authorizeRoles(...allowedRoles);

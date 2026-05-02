@@ -98,7 +98,7 @@ const Profile: React.FC = () => {
   return (
     <div className="profile-container">
       <div className="profile-header">
-        <h1>Teacher Profile</h1>
+        <h1>Faculty Profile</h1>
         <p>Edit your personal information and account settings</p>
       </div>
 
