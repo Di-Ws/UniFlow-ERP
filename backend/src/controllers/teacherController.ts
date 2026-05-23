@@ -43,6 +43,15 @@ export const getFacultys = async (req: AuthRequest, res: Response) => {
       });
       const assignedFacultyIds = student?.faculty.map((f: any) => f.id) || [];
       where.id = { in: assignedFacultyIds };
+    } else if (role === 'HOD') {
+      const hodDept = await prisma.department.findUnique({
+        where: { hodId: userId }
+      });
+      if (hodDept) {
+        where.departmentId = hodDept.id;
+      } else {
+        where.departmentId = -1; // No department, show nothing
+      }
     }
 
     let query: any = { where };

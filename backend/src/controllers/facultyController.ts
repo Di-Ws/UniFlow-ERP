@@ -1,6 +1,8 @@
 import { Response } from "express";
 import { prisma } from "../config/db";
 import { AuthRequest } from "../middleware/authMiddleware";
+import fs from "fs";
+import path from "path";
 
 export const getDashboardSummary = async (req: AuthRequest, res: Response) => {
   try {
@@ -173,5 +175,248 @@ export const getMyCourses = async (req: AuthRequest, res: Response) => {
     res.json(courses);
   } catch (error: any) {
     res.status(500).json({ message: "Error fetching assigned courses", error: error.message });
+  }
+};
+
+// Timetable CRUD
+export const getTimetable = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    const faculty = await prisma.faculty.findUnique({ where: { userId } });
+    if (!faculty) {
+      return res.status(404).json({ message: "Faculty profile not found" });
+    }
+
+    const timetable = await prisma.timetable.findMany({
+      where: { facultyId: faculty.id },
+      include: {
+        course: true
+      }
+    });
+
+    res.json(timetable);
+  } catch (error: any) {
+    res.status(500).json({ message: "Error fetching timetable", error: error.message });
+  }
+};
+
+export const createTimetableSlot = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    const faculty = await prisma.faculty.findUnique({ where: { userId } });
+    if (!faculty) {
+      return res.status(404).json({ message: "Faculty profile not found" });
+    }
+
+    const { courseId, subject, section, room, startTime, endTime, dayOfWeek, type } = req.body;
+
+    const slot = await prisma.timetable.create({
+      data: {
+        facultyId: faculty.id,
+        courseId: courseId ? Number(courseId) : null,
+        subject: subject || "",
+        section: section || "",
+        room: room || "",
+        startTime: startTime || "",
+        endTime: endTime || "",
+        dayOfWeek: dayOfWeek || "",
+        type: type || "Lecture"
+      },
+      include: {
+        course: true
+      }
+    });
+
+    res.status(201).json(slot);
+  } catch (error: any) {
+    res.status(400).json({ message: "Error creating timetable slot", error: error.message });
+  }
+};
+
+export const updateTimetableSlot = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+    const faculty = await prisma.faculty.findUnique({ where: { userId } });
+    if (!faculty) {
+      return res.status(404).json({ message: "Faculty profile not found" });
+    }
+
+    const existingSlot = await prisma.timetable.findFirst({
+      where: { id: Number(id), facultyId: faculty.id }
+    });
+
+    if (!existingSlot) {
+      return res.status(404).json({ message: "Timetable slot not found or access denied" });
+    }
+
+    const { courseId, subject, section, room, startTime, endTime, dayOfWeek, type } = req.body;
+
+    const updatedSlot = await prisma.timetable.update({
+      where: { id: Number(id) },
+      data: {
+        courseId: courseId ? Number(courseId) : null,
+        subject: subject ?? existingSlot.subject,
+        section: section ?? existingSlot.section,
+        room: room ?? existingSlot.room,
+        startTime: startTime ?? existingSlot.startTime,
+        endTime: endTime ?? existingSlot.endTime,
+        dayOfWeek: dayOfWeek ?? existingSlot.dayOfWeek,
+        type: type ?? existingSlot.type
+      },
+      include: {
+        course: true
+      }
+    });
+
+    res.json(updatedSlot);
+  } catch (error: any) {
+    res.status(400).json({ message: "Error updating timetable slot", error: error.message });
+  }
+};
+
+export const deleteTimetableSlot = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+    const faculty = await prisma.faculty.findUnique({ where: { userId } });
+    if (!faculty) {
+      return res.status(404).json({ message: "Faculty profile not found" });
+    }
+
+    const existingSlot = await prisma.timetable.findFirst({
+      where: { id: Number(id), facultyId: faculty.id }
+    });
+
+    if (!existingSlot) {
+      return res.status(404).json({ message: "Timetable slot not found or access denied" });
+    }
+
+    await prisma.timetable.delete({
+      where: { id: Number(id) }
+    });
+
+    res.json({ message: "Timetable slot deleted successfully" });
+  } catch (error: any) {
+    res.status(500).json({ message: "Error deleting timetable slot", error: error.message });
+  }
+};
+
+// Course Materials CRUD
+export const uploadMaterial = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    const faculty = await prisma.faculty.findUnique({ where: { userId } });
+    if (!faculty) {
+      return res.status(404).json({ message: "Faculty profile not found" });
+    }
+
+    const { title, description, fileName, fileData, courseId, category } = req.body;
+    if (!fileName || !fileData || !courseId) {
+      return res.status(400).json({ message: "Missing required fields (fileName, fileData, courseId)" });
+    }
+
+    // Save base64 data to local file
+    const fileExtension = path.extname(fileName);
+    const baseName = path.basename(fileName, fileExtension).replace(/[^a-zA-Z0-9]/g, "_");
+    const uniqueFileName = `${baseName}-${Date.now()}${fileExtension}`;
+    const uploadsDir = path.join(__dirname, "../../uploads");
+    
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+    
+    const filePath = path.join(uploadsDir, uniqueFileName);
+    let fileBuffer: Buffer;
+    
+    if (fileData.includes(";base64,")) {
+      const parts = fileData.split(";base64,");
+      fileBuffer = Buffer.from(parts[1], "base64");
+    } else {
+      fileBuffer = Buffer.from(fileData, "base64");
+    }
+    
+    fs.writeFileSync(filePath, fileBuffer);
+    const fileUrl = `/uploads/${uniqueFileName}`;
+
+    const material = await prisma.courseMaterial.create({
+      data: {
+        title: title || fileName,
+        description: description || "",
+        fileUrl,
+        fileName: fileName,
+        category: category || "Notes Synopsis/E-material",
+        courseId: Number(courseId),
+        facultyId: faculty.id
+      },
+      include: {
+        course: true
+      }
+    });
+
+    res.status(201).json(material);
+  } catch (error: any) {
+    console.error("Error in uploadMaterial:", error);
+    res.status(500).json({ message: "Error uploading course material", error: error.message });
+  }
+};
+
+export const getUploadedMaterials = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    const faculty = await prisma.faculty.findUnique({ where: { userId } });
+    if (!faculty) {
+      return res.status(404).json({ message: "Faculty profile not found" });
+    }
+
+    const materials = await prisma.courseMaterial.findMany({
+      where: { facultyId: faculty.id },
+      include: {
+        course: true
+      },
+      orderBy: { createdAt: "desc" }
+    });
+
+    res.json(materials);
+  } catch (error: any) {
+    res.status(500).json({ message: "Error fetching course materials", error: error.message });
+  }
+};
+
+export const deleteMaterial = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+    const faculty = await prisma.faculty.findUnique({ where: { userId } });
+    if (!faculty) {
+      return res.status(404).json({ message: "Faculty profile not found" });
+    }
+
+    const material = await prisma.courseMaterial.findFirst({
+      where: { id: Number(id), facultyId: faculty.id }
+    });
+
+    if (!material) {
+      return res.status(404).json({ message: "Material not found or access denied" });
+    }
+
+    // Try deleting from filesystem
+    const relativePath = material.fileUrl; // e.g. /uploads/filename-123.pdf
+    const absolutePath = path.join(__dirname, "../..", relativePath);
+    if (fs.existsSync(absolutePath)) {
+      try {
+        fs.unlinkSync(absolutePath);
+      } catch (err: any) {
+        console.error("Failed to delete file from disk:", err.message);
+      }
+    }
+
+    await prisma.courseMaterial.delete({
+      where: { id: Number(id) }
+    });
+
+    res.json({ message: "Material deleted successfully" });
+  } catch (error: any) {
+    res.status(500).json({ message: "Error deleting material", error: error.message });
   }
 };

@@ -6,7 +6,7 @@ const HodSidebar: React.FC = () => {
 
   const infoItems = [
     { label: 'Admin ID', value: user?.id || 'HOD-2024-001' },
-    { label: 'Department', value: 'Head of Department - CSE' },
+    { label: 'Department', value: user?.managedDept ? `Head of Department - ${user.managedDept.name}` : 'Head of Department' },
     { label: 'Office', value: 'Admin Block, Room 101' },
     { label: 'Contact', value: '+1 (555) 000-1111' },
     { label: 'Email', value: user?.email || 'hod.cse@university.edu' },
@@ -14,7 +14,7 @@ const HodSidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-[320px] bg-white dark:bg-dark-card border-r border-slate-100 dark:border-white/5 flex flex-col h-full z-20">
+    <aside className="w-[320px] bg-white/90 dark:bg-dark-card/90 backdrop-blur-md border-r border-slate-100 dark:border-white/5 flex flex-col h-full z-20">
       <div className="p-10 flex flex-col items-start">
         {/* Profile Section */}
         <div className="flex items-center gap-5 mb-10">

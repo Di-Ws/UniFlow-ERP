@@ -12,9 +12,9 @@ module.exports = {
           hover: 'var(--primary-hover)',
         },
         dark: {
-          bg: '#0f172a',
-          card: '#1e293b',
-          border: '#334155',
+          bg: '#050814',
+          card: '#0f1322',
+          border: '#1e293b',
           text: '#f1f5f9',
           muted: '#94a3b8',
         }

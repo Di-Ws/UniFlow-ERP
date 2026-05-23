@@ -5,6 +5,10 @@ export interface User {
   name: string;
   email: string;
   role: 'HOD' | 'FACULTY' | 'STUDENT';
+  managedDept?: {
+    id: number;
+    name: string;
+  } | null;
 }
 
 interface DecodedToken {

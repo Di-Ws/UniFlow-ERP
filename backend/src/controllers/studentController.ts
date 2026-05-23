@@ -54,7 +54,14 @@ export const getStudents = async (req: AuthRequest, res: Response) => {
       where.id = { in: assignedStudentIds };
       where.user = { status: 'APPROVED' }; // Only show approved students
     } else if (role === 'HOD') {
-      // HOD sees all approved students
+      const hodDept = await prisma.department.findUnique({
+        where: { hodId: userId }
+      });
+      if (hodDept) {
+        where.departmentId = hodDept.id;
+      } else {
+        where.departmentId = -1; // No department, show nothing
+      }
       where.user = { status: 'APPROVED' };
     } else if (role === 'STUDENT') {
       // Students only see themselves
@@ -66,7 +73,8 @@ export const getStudents = async (req: AuthRequest, res: Response) => {
       where,
       include: {
         academicReports: true,
-        department: { select: { name: true } }
+        department: { select: { name: true } },
+        faculty: { select: { id: true, name: true, email: true } }
       }
     });
     res.json(students);
@@ -140,9 +148,17 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
     let students: any[] = [];
 
     if (role === 'HOD') {
-      students = await prisma.student.findMany({
-        select: { attendanceRate: true, feeStatus: true, departmentId: true }
+      const hodDept = await prisma.department.findUnique({
+        where: { hodId: userId }
       });
+      if (hodDept) {
+        students = await prisma.student.findMany({
+          where: { departmentId: hodDept.id },
+          select: { attendanceRate: true, feeStatus: true, departmentId: true }
+        });
+      } else {
+        students = [];
+      }
     } else if (role === 'FACULTY') {
       const facultyProfile = await prisma.faculty.findUnique({
         where: { userId },
@@ -169,12 +185,13 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
     // Calculate branch distribution for HODs
     let branchCounts: Record<string, number> = {};
     if (role === 'HOD') {
-      const depts = await prisma.department.findMany({
+      const hodDept = await prisma.department.findUnique({
+        where: { hodId: userId },
         include: { _count: { select: { students: true } } }
       });
-      depts.forEach(d => {
-        branchCounts[d.name] = d._count.students;
-      });
+      if (hodDept) {
+        branchCounts[hodDept.name] = hodDept._count.students;
+      }
     }
 
     res.json({

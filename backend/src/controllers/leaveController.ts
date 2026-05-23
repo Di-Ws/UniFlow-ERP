@@ -9,7 +9,22 @@ export const getLeaves = async (req: any, res: Response) => {
 
     let leaves;
     if (user?.role === "HOD") {
+      const hodDept = await prisma.department.findUnique({
+        where: { hodId: userId }
+      });
+      let whereClause: any = {};
+      if (hodDept) {
+        whereClause.user = {
+          OR: [
+            { student: { departmentId: hodDept.id } },
+            { faculty: { departmentId: hodDept.id } }
+          ]
+        };
+      } else {
+        whereClause.id = -1; // Force empty result if HOD manages no department
+      }
       leaves = await prisma.leave.findMany({ 
+        where: whereClause,
         orderBy: { createdAt: "desc" },
         include: { approvedBy: { select: { name: true } } }
       });

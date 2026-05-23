@@ -63,7 +63,7 @@ const Settings: React.FC = () => {
   ];
 
   return (
-    <div className="settings-page bg-white dark:bg-dark-bg min-h-screen">
+    <div className="settings-page bg-transparent dark:bg-transparent min-h-screen">
       <div className="page-header border-b border-gray-100 dark:border-white/5 pb-6">
         <h1 className="text-gray-900 dark:text-white">Settings</h1>
         <p className="text-gray-500 dark:text-slate-400">Manage your account, appearance, and dashboard preferences</p>

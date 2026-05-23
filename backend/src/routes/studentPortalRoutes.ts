@@ -9,5 +9,7 @@ router.get("/dashboard", verifyToken, authorizeRoles('STUDENT'), controller.getS
 router.patch("/profile", verifyToken, authorizeRoles('STUDENT'), controller.updateStudentProfile);
 router.get("/progress", verifyToken, authorizeRoles('STUDENT'), controller.getMonthlyProgress);
 router.get("/syllabus", verifyToken, authorizeRoles('STUDENT'), controller.getSyllabus);
+router.post("/pay-fee", verifyToken, authorizeRoles('STUDENT'), controller.payFee);
+router.get("/content", verifyToken, authorizeRoles('STUDENT'), controller.getCourseMaterials);
 
 export default router;

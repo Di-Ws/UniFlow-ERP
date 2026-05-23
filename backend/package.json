@@ -4,7 +4,7 @@
   "description": "Backend for Student Dataset Analyzer",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "nodemon --exec ts-node src/index.ts",
+    "dev": "nodemon",
     "build": "tsc",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",

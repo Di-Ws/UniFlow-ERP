@@ -41,7 +41,8 @@ export const login = async (req: Request, res: Response) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        managedDept: user.managedDept ? { id: user.managedDept.id, name: user.managedDept.name } : null
       }
     });
   } catch (error: any) {
@@ -74,7 +75,8 @@ export const refresh = async (req: Request, res: Response) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        managedDept: (user as any).managedDept ? { id: (user as any).managedDept.id, name: (user as any).managedDept.name } : null
       }
     });
   } catch (error: any) {
@@ -109,7 +111,8 @@ export const updateProfile = async (req: any, res: Response) => {
         id: updatedUser.id,
         name: updatedUser.name,
         email: updatedUser.email,
-        role: updatedUser.role
+        role: updatedUser.role,
+        managedDept: (updatedUser as any).managedDept ? { id: (updatedUser as any).managedDept.id, name: (updatedUser as any).managedDept.name } : null
       }
     });
   } catch (error: any) {

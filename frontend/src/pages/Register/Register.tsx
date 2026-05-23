@@ -76,7 +76,7 @@ const Register: React.FC = () => {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    if (formData.role !== 'HOD' && !formData.departmentId) {
+    if (!formData.departmentId) {
       newErrors.departmentId = 'Please select a department';
     }
     
@@ -113,7 +113,7 @@ const Register: React.FC = () => {
             <Network size={24} />
           </div>
           <h1>Create Account</h1>
-          <p>Sign up to start analyzing datasets</p>
+          <p>Sign up to access UniFlow</p>
         </div>
 
         <form onSubmit={handleRegister}>
@@ -164,31 +164,31 @@ const Register: React.FC = () => {
               </select>
             </div>
 
-            {formData.role !== 'HOD' && (
-              <div className="input-group">
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#94a3b8', marginBottom: '0.5rem' }}>Department</label>
-                <select
-                  name="departmentId"
-                  value={formData.departmentId}
-                  onChange={handleChange}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem 1rem',
-                    background: '#1e293b',
-                    border: '1px solid #334155',
-                    borderRadius: '8px',
-                    color: '#f8fafc',
-                    fontSize: '0.9rem',
-                    outline: 'none',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {departments.map(dept => (
-                    <option key={dept.id} value={dept.id}>{dept.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
+            <div className="input-group">
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#94a3b8', marginBottom: '0.5rem' }}>
+                {formData.role === 'HOD' ? 'Department to Manage' : 'Department'}
+              </label>
+              <select
+                name="departmentId"
+                value={formData.departmentId}
+                onChange={handleChange}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1rem',
+                  background: '#1e293b',
+                  border: '1px solid #334155',
+                  borderRadius: '8px',
+                  color: '#f8fafc',
+                  fontSize: '0.9rem',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                {departments.map(dept => (
+                  <option key={dept.id} value={dept.id}>{dept.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
           
           <InputField

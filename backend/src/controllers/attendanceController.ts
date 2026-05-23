@@ -30,6 +30,16 @@ export const markBulkAttendance = async (req: AuthRequest, res: Response) => {
     // Process in a transaction to ensure atomicity
     await prisma.$transaction(async (tx) => {
       for (const record of records) {
+        // Enforce fee status check (block attendance if unpaid and not permitted)
+        const student = await tx.student.findUnique({
+          where: { id: record.studentId },
+          select: { name: true, feeStatus: true, feePermitted: true }
+        });
+
+        if (student && student.feeStatus !== 'Paid' && !student.feePermitted) {
+          throw new Error(`Attendance block active for ${student.name}. Fees are unpaid and no HOD permission exists.`);
+        }
+
         // Delete existing record for same student, date, and period to prevent duplicates
         // We use deleteMany to avoid 404 if it doesn't exist
         await tx.attendance.deleteMany({

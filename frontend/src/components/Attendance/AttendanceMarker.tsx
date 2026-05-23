@@ -8,7 +8,11 @@ interface Student {
   id: number;
   name: string;
   batch?: string;
-  year?: string;
+  year?: string | number;
+  feeStatus?: string;
+  feeDue?: number;
+  feePermitted?: boolean;
+  feePermissionReason?: string | null;
 }
 
 interface AttendanceMarkerProps {
@@ -29,11 +33,14 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
-  // Initialize all as PRESENT by default
+  // Initialize all active students as PRESENT by default
   useEffect(() => {
     const initialMap: Record<number, 'PRESENT' | 'ABSENT'> = {};
     students.forEach(s => {
-      initialMap[s.id] = 'PRESENT';
+      const isBlocked = s.feeStatus !== 'Paid' && !s.feePermitted;
+      if (!isBlocked) {
+        initialMap[s.id] = 'PRESENT';
+      }
     });
     setAttendanceMap(initialMap);
   }, [students]);
@@ -41,7 +48,10 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
   const toggleAll = (status: 'PRESENT' | 'ABSENT') => {
     const newMap = { ...attendanceMap };
     students.forEach(s => {
-      newMap[s.id] = status;
+      const isBlocked = s.feeStatus !== 'Paid' && !s.feePermitted;
+      if (!isBlocked) {
+        newMap[s.id] = status;
+      }
     });
     setAttendanceMap(newMap);
   };
@@ -58,7 +68,9 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
 
     try {
       setIsSubmitting(true);
-      const records: AttendanceRecord[] = students.map(s => ({
+      // Exclude blocked students from payload
+      const activeStudents = students.filter(s => !(s.feeStatus !== 'Paid' && !s.feePermitted));
+      const records: AttendanceRecord[] = activeStudents.map(s => ({
         studentId: s.id,
         courseId: courseId || null,
         date: date,
@@ -77,7 +89,14 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
     }
   };
 
-  const presentCount = Object.values(attendanceMap).filter(v => v === 'PRESENT').length;
+  const activeStudents = students.filter(s => !(s.feeStatus !== 'Paid' && !s.feePermitted));
+  const blockedCount = students.length - activeStudents.length;
+
+  const presentCount = Object.keys(attendanceMap).filter(id => {
+    const student = students.find(s => s.id === Number(id));
+    const isBlocked = student ? (student.feeStatus !== 'Paid' && !student.feePermitted) : false;
+    return !isBlocked && attendanceMap[Number(id)] === 'PRESENT';
+  }).length;
 
   return (
     <div className="bg-white dark:bg-dark-card rounded-[32px] border border-slate-100 dark:border-white/5 overflow-hidden shadow-sm">
@@ -135,57 +154,84 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50 dark:divide-white/5">
-            {students.map((student) => (
-              <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors">
-                <td className="py-6 px-8">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center font-bold text-slate-400">
-                      {student.name.charAt(0)}
+            {students.map((student) => {
+              const isBlocked = student.feeStatus !== 'Paid' && !student.feePermitted;
+              const isPermitted = student.feeStatus !== 'Paid' && student.feePermitted;
+              return (
+                <tr key={student.id} className={`hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors ${isBlocked ? 'opacity-65 bg-rose-500/[0.01]' : ''}`}>
+                  <td className="py-6 px-8">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center font-bold text-slate-400">
+                        {student.name.charAt(0)}
+                      </div>
+                      <div>
+                        <span className="font-bold text-slate-900 dark:text-white block">{student.name}</span>
+                        {isPermitted && (
+                          <span 
+                            className="inline-block mt-1 text-[9px] font-black uppercase bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-500/10" 
+                            title={student.feePermissionReason || ''}
+                          >
+                            Permitted (HOD: {student.feePermissionReason})
+                          </span>
+                        )}
+                        {isBlocked && (
+                          <span className="inline-block mt-1 text-[9px] font-black uppercase bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 px-2 py-0.5 rounded-md border border-rose-100 dark:border-rose-500/10">
+                            Blocked (Pending Fees)
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <span className="font-bold text-slate-900 dark:text-white">{student.name}</span>
-                  </div>
-                </td>
-                <td className="py-6 px-8 text-center text-xs font-bold text-slate-400">
-                  {student.batch} • {student.year}
-                </td>
-                <td className="py-6 px-8">
-                  <div className="flex items-center justify-center gap-4">
-                    <label className="relative flex items-center cursor-pointer group">
-                      <input 
-                        type="radio" 
-                        name={`status-${student.id}`}
-                        checked={attendanceMap[student.id] === 'PRESENT'}
-                        onChange={() => handleStatusChange(student.id, 'PRESENT')}
-                        className="sr-only"
-                      />
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-all ${
-                        attendanceMap[student.id] === 'PRESENT' 
-                          ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/30' 
-                          : 'bg-transparent border-slate-200 dark:border-white/10 text-slate-300 group-hover:border-emerald-500/50'
-                      }`}>
-                        <Check size={20} strokeWidth={3} />
+                  </td>
+                  <td className="py-6 px-8 text-center text-xs font-bold text-slate-400">
+                    {student.batch} • Year {student.year}
+                  </td>
+                  <td className="py-6 px-8">
+                    {isBlocked ? (
+                      <div className="flex items-center justify-center">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-rose-500 bg-rose-500/10 px-4 py-2 rounded-xl border border-rose-500/20">
+                          Blocked
+                        </span>
                       </div>
-                    </label>
-                    <label className="relative flex items-center cursor-pointer group">
-                      <input 
-                        type="radio" 
-                        name={`status-${student.id}`}
-                        checked={attendanceMap[student.id] === 'ABSENT'}
-                        onChange={() => handleStatusChange(student.id, 'ABSENT')}
-                        className="sr-only"
-                      />
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-all ${
-                        attendanceMap[student.id] === 'ABSENT' 
-                          ? 'bg-rose-500 border-rose-500 text-white shadow-lg shadow-rose-500/30' 
-                          : 'bg-transparent border-slate-200 dark:border-white/10 text-slate-300 group-hover:border-rose-500/50'
-                      }`}>
-                        <X size={20} strokeWidth={3} />
+                    ) : (
+                      <div className="flex items-center justify-center gap-4">
+                        <label className="relative flex items-center cursor-pointer group">
+                          <input 
+                            type="radio" 
+                            name={`status-${student.id}`}
+                            checked={attendanceMap[student.id] === 'PRESENT'}
+                            onChange={() => handleStatusChange(student.id, 'PRESENT')}
+                            className="sr-only"
+                          />
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-all ${
+                            attendanceMap[student.id] === 'PRESENT' 
+                              ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/30' 
+                              : 'bg-transparent border-slate-200 dark:border-white/10 text-slate-300 group-hover:border-emerald-500/50'
+                          }`}>
+                            <Check size={20} strokeWidth={3} />
+                          </div>
+                        </label>
+                        <label className="relative flex items-center cursor-pointer group">
+                          <input 
+                            type="radio" 
+                            name={`status-${student.id}`}
+                            checked={attendanceMap[student.id] === 'ABSENT'}
+                            onChange={() => handleStatusChange(student.id, 'ABSENT')}
+                            className="sr-only"
+                          />
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center border-2 transition-all ${
+                            attendanceMap[student.id] === 'ABSENT' 
+                              ? 'bg-rose-500 border-rose-500 text-white shadow-lg shadow-rose-500/30' 
+                              : 'bg-transparent border-slate-200 dark:border-white/10 text-slate-300 group-hover:border-rose-500/50'
+                          }`}>
+                            <X size={20} strokeWidth={3} />
+                          </div>
+                        </label>
                       </div>
-                    </label>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -195,12 +241,13 @@ const AttendanceMarker: React.FC<AttendanceMarkerProps> = ({
         <div className="flex items-center gap-3">
           <Users size={18} className="text-slate-400" />
           <span className="text-sm font-bold text-slate-500">
-            <span className="text-emerald-500">{presentCount} Present</span> / {students.length} Total
+            <span className="text-emerald-500">{presentCount} Present</span> / {activeStudents.length} Active 
+            {blockedCount > 0 && <span className="text-rose-500 ml-2">({blockedCount} Blocked)</span>}
           </span>
         </div>
         <button 
           onClick={handleSubmit}
-          disabled={isSubmitting || students.length === 0}
+          disabled={isSubmitting || activeStudents.length === 0}
           className="px-10 py-4 bg-primary text-white rounded-[20px] font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 flex items-center gap-3"
         >
           {isSubmitting ? (

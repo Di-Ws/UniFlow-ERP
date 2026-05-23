@@ -8,6 +8,19 @@ import { AuthRequest } from "../middleware/authMiddleware";
 export const getStudentPortalData = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId;
+
+    // Auto-correct: If this student has feeStatus !== 'Paid' but feeDue <= 0, set feeDue to 5000
+    await prisma.student.updateMany({
+      where: {
+        userId,
+        feeStatus: { not: "Paid" },
+        feeDue: { lte: 0 }
+      },
+      data: {
+        feeDue: 5000
+      }
+    });
+
     // Include courses and map faculty for "TBA" logic
     const studentWithCourses = await prisma.student.findUnique({
       where: { userId },
@@ -16,6 +29,7 @@ export const getStudentPortalData = async (req: AuthRequest, res: Response) => {
         transactions: { orderBy: { date: 'desc' } },
         academicReports: true,
         attendanceRecords: true,
+        department: true,
         courses: {
           include: { faculty: true }
         }
@@ -156,3 +170,147 @@ export const getSyllabus = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: "Error fetching syllabus", error: error.message });
   }
 };
+
+/**
+ * Mock payment for the student fee
+ */
+export const payFee = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    const { paymentMethod } = req.body; // e.g., 'Card' or 'UPI'
+
+    if (!paymentMethod || !['Card', 'UPI'].includes(paymentMethod)) {
+      return res.status(400).json({ message: "Invalid payment method. Must be 'Card' or 'UPI'." });
+    }
+
+    const student = await prisma.student.findUnique({
+      where: { userId },
+      select: { id: true, feeDue: true, feeStatus: true }
+    });
+
+    if (!student) {
+      return res.status(404).json({ message: "Student profile not found" });
+    }
+
+    if (student.feeDue <= 0 || student.feeStatus === 'Paid') {
+      return res.status(400).json({ message: "No pending fees to pay" });
+    }
+
+    const amountPaid = student.feeDue;
+
+    // Start database transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Update Student
+      const updatedStudent = await tx.student.update({
+        where: { id: student.id },
+        data: {
+          feeStatus: 'Paid',
+          feeDue: 0,
+          lastPaymentDate: new Date(),
+          feePermitted: false,
+          feePermissionReason: null
+        }
+      });
+
+      // 2. Create Transaction record
+      const transaction = await tx.transaction.create({
+        data: {
+          amount: amountPaid,
+          status: 'SUCCESS',
+          description: `Semester Fee Payment via ${paymentMethod}`,
+          studentId: student.id
+        }
+      });
+
+      return { updatedStudent, transaction };
+    });
+
+    res.json({
+      message: "Payment processed successfully",
+      transaction: result.transaction
+    });
+
+  } catch (error: any) {
+    console.error("Fee Payment Error:", error);
+    res.status(500).json({ message: "Error processing payment", error: error.message });
+  }
+};
+
+/**
+ * Get all course materials for the student's enrolled courses
+ */
+export const getCourseMaterials = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    const student = await prisma.student.findUnique({
+      where: { userId },
+      select: { departmentId: true, semester: true }
+    });
+
+    if (!student) {
+      return res.status(404).json({ message: "Student profile not found" });
+    }
+
+    // Read query parameters
+    const { semester, departmentId, search, searchMode } = req.query;
+
+    const courseWhere: any = {};
+    
+    // Filter by department
+    if (departmentId && departmentId !== "") {
+      courseWhere.departmentId = Number(departmentId);
+    } else {
+      // Default to student's department
+      courseWhere.departmentId = student.departmentId;
+    }
+
+    // Filter by semester
+    if (semester && semester !== "all" && semester !== "") {
+      courseWhere.semester = Number(semester);
+    } else if (!semester || semester === "") {
+      // Default to student's current semester if not specified
+      courseWhere.semester = student.semester;
+    }
+
+    // Find courses matching criteria
+    const courses = await prisma.course.findMany({
+      where: courseWhere,
+      select: { id: true }
+    });
+
+    const courseIds = courses.map(c => c.id);
+
+    // Build material where clause
+    const materialWhere: any = {
+      courseId: { in: courseIds }
+    };
+
+    if (search && search !== "") {
+      const searchStr = String(search);
+      if (searchMode === "faculty") {
+        materialWhere.faculty = { name: { contains: searchStr } };
+      } else {
+        materialWhere.OR = [
+          { title: { contains: searchStr } },
+          { description: { contains: searchStr } },
+          { course: { name: { contains: searchStr } } },
+          { course: { code: { contains: searchStr } } }
+        ];
+      }
+    }
+
+    const materials = await prisma.courseMaterial.findMany({
+      where: materialWhere,
+      include: {
+        course: { select: { name: true, code: true, semester: true, departmentId: true } },
+        faculty: { select: { name: true, email: true, id: true } }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+
+    res.json(materials);
+  } catch (error: any) {
+    res.status(500).json({ message: "Error fetching course materials", error: error.message });
+  }
+};
+

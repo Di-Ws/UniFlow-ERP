@@ -99,6 +99,7 @@ model Faculty {
   
   timetable    Timetable[]
   attendanceRecords Attendance[]
+  materials    CourseMaterial[]
   
   createdAt    DateTime   @default(now())
 
@@ -134,8 +135,10 @@ model Student {
   
   attendanceRate Float           @default(0)
   feeStatus     String           @default("Unpaid")
-  feeDue        Float            @default(0)
+  feeDue        Float            @default(5000)
   lastPaymentDate DateTime?
+  feePermitted   Boolean          @default(false)
+  feePermissionReason String?      @db.Text
   
   // Assignments
   faculty       Faculty[]        // Many-to-Many: Assigned faculty members
@@ -195,6 +198,7 @@ model Course {
   
   timetable    Timetable[]
   attendance   Attendance[]
+  materials    CourseMaterial[]
 
   @@index([departmentId])
 }
@@ -295,4 +299,21 @@ model Event {
   title       String
   description String
   eventDate   DateTime
+}
+
+model CourseMaterial {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?  @db.Text
+  fileUrl     String   @db.Text
+  fileName    String
+  category    String   @default("Notes Synopsis/E-material")
+  courseId    Int
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  facultyId   Int
+  faculty     Faculty  @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([courseId])
+  @@index([facultyId])
 }

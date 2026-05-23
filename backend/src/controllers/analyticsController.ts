@@ -11,11 +11,29 @@ export const getHODLeaveAnalytics = async (req: AuthRequest, res: Response) => {
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
     sixMonthsAgo.setDate(1); // Start of the month
 
+    const userId = req.userId;
+    const hodDept = await prisma.department.findUnique({
+      where: { hodId: userId }
+    });
+
+    let whereClause: any = {
+      createdAt: { gte: sixMonthsAgo },
+      status: { in: ['APPROVED', 'REJECTED'] }
+    };
+
+    if (hodDept) {
+      whereClause.user = {
+        OR: [
+          { student: { departmentId: hodDept.id } },
+          { faculty: { departmentId: hodDept.id } }
+        ]
+      };
+    } else {
+      whereClause.id = -1; // Force empty result if HOD manages no department
+    }
+
     const leaves = await prisma.leave.findMany({
-      where: {
-        createdAt: { gte: sixMonthsAgo },
-        status: { in: ['APPROVED', 'REJECTED'] }
-      },
+      where: whereClause,
       select: {
         status: true,
         createdAt: true

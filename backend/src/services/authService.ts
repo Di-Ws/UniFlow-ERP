@@ -62,6 +62,47 @@ export const registerUser = async (data: any) => {
     }
   }
 
+  if (normalizedRole === "HOD") {
+    const deptId = data.registrationMetadata?.departmentId;
+    if (!deptId) {
+      throw new Error("HOD must select a department to manage");
+    }
+
+    const existingDept = await prisma.department.findUnique({
+      where: { id: Number(deptId) }
+    });
+
+    if (!existingDept) {
+      throw new Error("Selected department does not exist");
+    }
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: normalizedRole,
+        status: "APPROVED",
+        registrationMetadata: data.registrationMetadata || null
+      }
+    });
+
+    // Update department to assign this HOD
+    await prisma.department.update({
+      where: { id: Number(deptId) },
+      data: { hodId: user.id }
+    });
+
+    return await prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        managedDept: {
+          select: { id: true, name: true }
+        }
+      }
+    });
+  }
+
   const user = await prisma.user.create({
     data: {
       name,
@@ -81,7 +122,12 @@ export const loginUser = async (data: any) => {
   const email = String(rawEmail).toLowerCase();
 
   const user = await prisma.user.findUnique({
-    where: { email }
+    where: { email },
+    include: {
+      managedDept: {
+        select: { id: true, name: true }
+      }
+    }
   });
 
   if (!user) {
@@ -124,7 +170,14 @@ export const refreshAccessToken = async (refreshToken: string) => {
       throw new Error("Invalid or expired refresh token");
     }
 
-    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    const user = await prisma.user.findUnique({ 
+      where: { id: decoded.id },
+      include: {
+        managedDept: {
+          select: { id: true, name: true }
+        }
+      }
+    });
     if (!user) throw new Error("User not found");
 
     // Rotate refresh token (optional but recommended for security)
@@ -145,7 +198,12 @@ export const revokeRefreshToken = async (token: string) => {
 
 export const getUserById = async (id: number) => {
   return await prisma.user.findUnique({
-    where: { id }
+    where: { id },
+    include: {
+      managedDept: {
+        select: { id: true, name: true }
+      }
+    }
   });
 };
 export const updateUser = async (userId: number, updateData: any) => {
@@ -188,6 +246,11 @@ export const updateUser = async (userId: number, updateData: any) => {
 
   return await prisma.user.update({
     where: { id: userId },
-    data
+    data,
+    include: {
+      managedDept: {
+        select: { id: true, name: true }
+      }
+    }
   });
 };

@@ -14,3 +14,19 @@ export const getMonthlyProgress = async () => {
   const response = await api.get('/student-portal/progress');
   return response.data;
 };
+
+export const payFee = async (paymentMethod: 'Card' | 'UPI') => {
+  const response = await api.post('/student-portal/pay-fee', { paymentMethod });
+  return response.data;
+};
+
+export const getCourseMaterials = async (params?: { 
+  semester?: string | number; 
+  departmentId?: string | number; 
+  search?: string; 
+  searchMode?: 'subject' | 'faculty'; 
+}) => {
+  const response = await api.get('/student-portal/content', { params });
+  return response.data;
+};
+

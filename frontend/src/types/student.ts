@@ -11,8 +11,12 @@ export interface Student {
   semester: number;
   attendanceRate: number;
   feeStatus: string;
+  feeDue: number;
+  feePermitted?: boolean;
+  feePermissionReason?: string | null;
   faculty?: any[];
   courses?: any[];
+  academicReports?: any[];
 }
 
 export interface ApiResponse<T> {

@@ -23,7 +23,7 @@ export const StudentCard: React.FC<{ student: any }> = ({ student }) => {
       </div>
       <div className="card-main">
         <h3>{safeRender(student.name)}</h3>
-        <p className="card-subtext">Year {safeRender(student.year || student.semester)} • {safeRender(student.batch) || 'Batch N/A'}</p>
+        <p className="card-subtext">Year {safeRender(student.year)} (Sem {safeRender(student.semester)}) • {safeRender(student.batch) || 'Batch N/A'}</p>
         
         <div className="card-details">
           <div className="detail-item">

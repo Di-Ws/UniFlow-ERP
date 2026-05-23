@@ -66,6 +66,39 @@ const ProfileUpdateForm: React.FC<Props> = ({ initialData, onSuccess }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
+            <label className="text-xs font-black uppercase tracking-widest text-slate-400">Email Address (Read Only)</label>
+            <input
+              type="text"
+              readOnly
+              disabled
+              value={initialData?.email || ''}
+              className="w-full bg-gray-100 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl py-3 px-4 text-sm outline-none opacity-80 cursor-not-allowed dark:text-white font-bold"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-black uppercase tracking-widest text-slate-400">Current Semester (Read Only)</label>
+            <input
+              type="text"
+              readOnly
+              disabled
+              value={initialData?.semester ? `Semester ${initialData.semester}` : 'Not Assigned'}
+              className="w-full bg-gray-100 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl py-3 px-4 text-sm outline-none opacity-80 cursor-not-allowed dark:text-white font-bold"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-black uppercase tracking-widest text-slate-400">Department (Read Only)</label>
+            <input
+              type="text"
+              readOnly
+              disabled
+              value={initialData?.department?.name || initialData?.branch || 'Not Assigned'}
+              className="w-full bg-gray-100 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl py-3 px-4 text-sm outline-none opacity-80 cursor-not-allowed dark:text-white font-bold"
+            />
+          </div>
+
+          <div className="space-y-2">
             <label className="text-xs font-black uppercase tracking-widest text-slate-400">Phone Number</label>
             <div className="relative">
               <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
@@ -89,6 +122,27 @@ const ProfileUpdateForm: React.FC<Props> = ({ initialData, onSuccess }) => {
               />
             </div>
             {errors.photoUrl && <p className="text-xs text-rose-500 font-bold">{String(errors.photoUrl.message)}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-black uppercase tracking-widest text-slate-400">Fee Status & Standing</label>
+            <div className="w-full bg-gray-100 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl py-3 px-4 text-sm font-bold flex items-center justify-between dark:text-white cursor-not-allowed">
+              <span>{initialData?.feeStatus || 'Unpaid'}</span>
+              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${initialData?.feeStatus === 'Paid' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10' : 'bg-rose-50 text-rose-600 dark:bg-rose-500/10'}`}>
+                {initialData?.feeStatus === 'Paid' ? 'Paid' : 'Unpaid'}
+              </span>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-black uppercase tracking-widest text-slate-400">Outstanding Fee Amount</label>
+            <input
+              type="text"
+              readOnly
+              disabled
+              value={initialData?.feeDue !== undefined ? `$${initialData.feeDue.toLocaleString()}` : '$0'}
+              className="w-full bg-gray-100 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl py-3 px-4 text-sm font-black text-rose-500 dark:text-rose-400 outline-none opacity-85 cursor-not-allowed"
+            />
           </div>
 
           <div className="md:col-span-2 space-y-2">

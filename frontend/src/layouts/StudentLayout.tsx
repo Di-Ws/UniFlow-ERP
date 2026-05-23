@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar/Navbar';
 
 const StudentLayout: React.FC = () => {
   return (
-    <div className="flex min-h-screen bg-white dark:bg-dark-bg text-slate-900 dark:text-white transition-colors duration-300">
+    <div className="flex min-h-screen bg-transparent dark:bg-transparent text-slate-900 dark:text-white transition-colors duration-300">
       <Sidebar />
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <Navbar />

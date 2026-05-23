@@ -10,7 +10,7 @@ const Navbar: React.FC = () => {
   const breadcrumbText = pathnames.length > 1 ? pathnames[1].charAt(0).toUpperCase() + pathnames[1].slice(1) : (pathnames.length === 1 ? pathnames[0].charAt(0).toUpperCase() + pathnames[0].slice(1) : 'Dashboard');
 
   return (
-    <nav className="bg-white dark:bg-dark-bg border-b border-gray-100 dark:border-white/5 h-[72px] flex items-center justify-between px-8 sticky top-0 z-20 w-full">
+    <nav className="bg-white/80 dark:bg-dark-card/65 backdrop-blur-md border-b border-gray-100 dark:border-white/5 h-[72px] flex items-center justify-between px-8 sticky top-0 z-20 w-full">
       
       {/* Breadcrumbs */}
       <div className="flex items-center text-sm font-medium text-gray-500 dark:text-slate-400">

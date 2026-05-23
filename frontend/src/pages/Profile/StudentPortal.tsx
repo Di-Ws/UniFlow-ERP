@@ -4,13 +4,14 @@ import ProfileUpdateForm from './ProfileUpdateForm';
 import FeeDashboard from './FeeDashboard';
 import AssignmentTabs from './AssignmentTabs';
 import MonthlyProgressReport from './MonthlyProgressReport';
-import { User, Wallet, ClipboardList, BarChart3, Lock } from 'lucide-react';
+import StudentStudyMaterials from '../../components/Student/StudentStudyMaterials';
+import { User, Wallet, ClipboardList, BarChart3, Lock, BookOpen } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const StudentPortal: React.FC = () => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'profile' | 'fees' | 'assignments' | 'reports'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'fees' | 'assignments' | 'reports' | 'materials'>('profile');
 
   const fetchData = async () => {
     try {
@@ -38,11 +39,12 @@ const StudentPortal: React.FC = () => {
   const hasRequiredInfo = data?.nextOfKinName && data?.nextOfKinPhone;
   const isProfileLocked = !hasRequiredInfo;
 
-  const tabs: Array<{ id: 'profile' | 'fees' | 'assignments' | 'reports', label: string, icon: any, color: string, locked?: boolean }> = [
+  const tabs: Array<{ id: 'profile' | 'fees' | 'assignments' | 'reports' | 'materials', label: string, icon: any, color: string, locked?: boolean }> = [
     { id: 'profile', label: 'My Profile', icon: User, color: 'text-blue-500' },
     { id: 'fees', label: 'Fees & Finance', icon: Wallet, color: 'text-amber-500', locked: isProfileLocked },
     { id: 'assignments', label: 'Assignments', icon: ClipboardList, color: 'text-emerald-500', locked: isProfileLocked },
     { id: 'reports', label: 'Performance', icon: BarChart3, color: 'text-purple-500', locked: isProfileLocked },
+    { id: 'materials', label: 'Study Materials', icon: BookOpen, color: 'text-sky-500', locked: isProfileLocked },
   ];
 
   return (
@@ -59,7 +61,9 @@ const StudentPortal: React.FC = () => {
           </div>
           <div>
             <p className="text-sm font-bold text-gray-900 dark:text-white">{data?.name}</p>
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Student ID: #{data?.id}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              Semester {data?.semester || 'N/A'} • Student ID: #{data?.id}
+            </p>
           </div>
         </div>
       </div>
@@ -91,7 +95,14 @@ const StudentPortal: React.FC = () => {
         )}
 
         {activeTab === 'fees' && !isProfileLocked && (
-          <FeeDashboard feeDue={data.feeDue} lastPayment={data.lastPaymentDate} transactions={data.transactions} />
+          <FeeDashboard 
+            feeDue={data.feeDue} 
+            lastPayment={data.lastPaymentDate} 
+            transactions={data.transactions} 
+            studentName={data.name}
+            studentId={data.id}
+            onPaymentSuccess={fetchData} 
+          />
         )}
 
         {activeTab === 'assignments' && !isProfileLocked && (
@@ -99,7 +110,14 @@ const StudentPortal: React.FC = () => {
         )}
 
         {activeTab === 'reports' && !isProfileLocked && (
-          <MonthlyProgressReport />
+          <MonthlyProgressReport academicReports={data?.academicReports || []} />
+        )}
+
+        {activeTab === 'materials' && !isProfileLocked && (
+          <StudentStudyMaterials 
+            defaultDepartmentId={data?.departmentId} 
+            defaultSemester={data?.semester} 
+          />
         )}
 
         {activeTab !== 'profile' && isProfileLocked && (

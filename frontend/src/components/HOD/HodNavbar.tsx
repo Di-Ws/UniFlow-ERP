@@ -8,13 +8,13 @@ import { useTheme } from '../../hooks/useTheme';
 const HodNavbar: React.FC = () => {
   const { logout } = useAuth();
   return (
-    <nav className="h-24 bg-white dark:bg-dark-card border-b border-slate-100 dark:border-white/5 px-12 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+    <nav className="h-24 bg-white/80 dark:bg-dark-card/65 backdrop-blur-md border-b border-slate-100 dark:border-white/5 px-12 flex items-center justify-between sticky top-0 z-30 shadow-sm">
       {/* Left: Branding */}
       <div className="flex items-center gap-4">
         <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-primary/20">
-          E
+          U
         </div>
-        <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">ERP</span>
+        <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">UniFlow</span>
       </div>
 
       {/* Center: Tabs Navigation */}

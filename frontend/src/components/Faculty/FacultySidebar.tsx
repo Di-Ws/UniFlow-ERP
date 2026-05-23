@@ -14,7 +14,7 @@ const FacultySidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-[320px] bg-white dark:bg-dark-card border-r border-slate-100 dark:border-white/5 flex flex-col h-full z-20">
+    <aside className="w-[320px] bg-white/90 dark:bg-dark-card/90 backdrop-blur-md border-r border-slate-100 dark:border-white/5 flex flex-col h-full z-20">
       <div className="p-10 flex flex-col items-start">
         {/* Profile Section */}
         <div className="flex items-center gap-5 mb-10">

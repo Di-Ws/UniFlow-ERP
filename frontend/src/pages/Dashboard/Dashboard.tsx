@@ -11,6 +11,7 @@ import RegistrationQueue from '../../components/Admin/RegistrationQueue';
 import StrategicOverview from '../../components/Dashboard/StrategicOverview';
 import FacultyCourseGrid from '../../components/Dashboard/FacultyCourseGrid';
 import StudentSyllabusGrid from '../../components/Dashboard/StudentSyllabusGrid';
+import UnpaidStudentsList from '../../components/Admin/UnpaidStudentsList';
 
 import { getUserRole, getUser } from '../../utils/auth';
 
@@ -106,8 +107,9 @@ const Dashboard: React.FC = () => {
 
       {role === 'HOD' && (
         <div className="mb-8 space-y-8">
-          <StrategicOverview deptName="CSE" />
+          <StrategicOverview deptName={currentUser?.managedDept?.name || "CSE"} />
           <RegistrationQueue />
+          <UnpaidStudentsList />
         </div>
       )}
 

@@ -36,7 +36,7 @@ const StudentList: React.FC = () => {
   return (
     <div style={{ padding: '2rem' }}>
       <h2>Student Directory</h2>
-      <p>Displaying all students retrieved from the ERP System via the robust API layer.</p>
+      <p>Displaying all students retrieved from UniFlow via the robust API layer.</p>
       
       {students.length === 0 ? (
         <p>No students found in the system. Try adding one!</p>

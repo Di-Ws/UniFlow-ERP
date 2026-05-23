@@ -66,7 +66,7 @@ const StudentProfile: React.FC = () => {
             </div>
             <div className="hero-info">
               <h2>{safeRender(student.name)}</h2>
-              <p>{safeRender(student.batch || student.branch)} • Year {safeRender(student.year || student.semester || student.section)}</p>
+              <p>{safeRender(student.batch || student.branch)} • Year {safeRender(student.year)} • Semester {safeRender(student.semester)}</p>
               <div className={`fee-status-pill ${String(student.feeStatus || '').toLowerCase()}`}>
                 {safeRender(student.feeStatus)}
               </div>
@@ -101,7 +101,7 @@ const StudentProfile: React.FC = () => {
                 <GraduationCap size={16} />
                 <div className="info-content">
                   <label>Academic Standing</label>
-                  <span>Batch {safeRender(student.batch)}</span>
+                  <span>Semester {safeRender(student.semester)} • Batch {safeRender(student.batch)}</span>
                 </div>
               </div>
             </div>

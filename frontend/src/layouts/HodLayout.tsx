@@ -5,7 +5,7 @@ import HodNavbar from '../components/HOD/HodNavbar';
 
 const HodLayout: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col overflow-x-hidden bg-white dark:bg-dark-bg text-slate-900 dark:text-white transition-colors duration-300">
+    <div className="min-h-screen flex flex-col overflow-x-hidden bg-transparent dark:bg-transparent text-slate-900 dark:text-white transition-colors duration-300">
       {/* Top Navbar */}
       <HodNavbar />
       

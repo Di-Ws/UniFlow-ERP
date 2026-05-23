@@ -75,13 +75,13 @@ const Sidebar: React.FC = () => {
   const currentMenuItems = menuItems[currentRole] || menuItems['Student'] || [];
 
   return (
-    <div className="w-[280px] bg-white dark:bg-dark-card flex flex-col h-screen shrink-0 text-slate-600 dark:text-slate-300 border-r border-gray-100 dark:border-white/5 transition-colors duration-300">
+    <div className="w-[280px] bg-white/90 dark:bg-dark-card/90 backdrop-blur-md flex flex-col h-screen shrink-0 text-slate-600 dark:text-slate-300 border-r border-gray-100 dark:border-white/5 transition-colors duration-300">
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-8 text-gray-900 dark:text-white">
         <div className="w-8 h-8 rounded bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
           <Box size={20} className="text-white" />
         </div>
-        <h1 className="text-xl font-bold tracking-tight">ERP System</h1>
+        <h1 className="text-xl font-bold tracking-tight">UniFlow</h1>
       </div>
 
       {/* Profile Card */}
