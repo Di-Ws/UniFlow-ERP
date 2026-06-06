@@ -1,4 +1,4 @@
-Deployed https://github.com/Di-Ws/UniFlow-ERP.git
+Deployed
 
 Multi-Branch University Management System
 
