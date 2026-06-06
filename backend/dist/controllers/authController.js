@@ -33,14 +33,16 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateProfile = exports.getCurrentUser = exports.logout = exports.login = exports.register = void 0;
+exports.getDepartments = exports.updateProfile = exports.getCurrentUser = exports.logout = exports.refresh = exports.login = exports.register = void 0;
 const authService = __importStar(require("../services/authService"));
+const db_1 = require("../config/db");
 const register = async (req, res) => {
     try {
         await authService.registerUser(req.body);
         res.json({ message: "Registered" });
     }
     catch (error) {
+        console.error("Register Error Details:", error);
         // Basic mapping of specific service errors to 400 Bad Request
         const clientErrors = [
             "User with this email already exists",
@@ -51,36 +53,75 @@ const register = async (req, res) => {
         if (clientErrors.includes(error.message)) {
             return res.status(400).json({ message: error.message });
         }
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({ message: "Server error: " + error.message });
     }
 };
 exports.register = register;
 const login = async (req, res) => {
     try {
-        const { token, user } = await authService.loginUser(req.body);
+        const { accessToken, refreshToken, user } = await authService.loginUser(req.body);
+        // Set refresh token in HttpOnly cookie
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
         res.json({
-            token,
+            accessToken,
             user: {
                 id: user.id,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                role: user.role,
+                managedDept: user.managedDept ? { id: user.managedDept.id, name: user.managedDept.name } : null
             }
         });
     }
     catch (error) {
+        console.error("Login Error Details:", error);
         if (error.message === "User not found") {
             return res.status(404).json({ message: error.message });
         }
         if (error.message === "Wrong password") {
             return res.status(401).json({ message: error.message });
         }
-        res.status(500).json({ message: "Server error" });
+        if (error.message === "Your account is awaiting HOD approval") {
+            return res.status(403).json({ message: error.message });
+        }
+        res.status(500).json({ message: "Server error: " + error.message });
     }
 };
 exports.login = login;
+const refresh = async (req, res) => {
+    const refreshToken = req.cookies?.refreshToken;
+    if (!refreshToken) {
+        return res.status(401).json({ message: "Refresh token missing" });
+    }
+    try {
+        const { accessToken, user } = await authService.refreshAccessToken(refreshToken);
+        res.json({
+            accessToken,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                managedDept: user.managedDept ? { id: user.managedDept.id, name: user.managedDept.name } : null
+            }
+        });
+    }
+    catch (error) {
+        res.status(401).json({ message: error.message });
+    }
+};
+exports.refresh = refresh;
 const logout = async (req, res) => {
-    // Logout is typically handled on the frontend by removing the token
-    // but this endpoint is provided for backend acknowledgement
+    const refreshToken = req.cookies?.refreshToken;
+    if (refreshToken) {
+        await authService.revokeRefreshToken(refreshToken);
+    }
+    res.clearCookie('refreshToken');
     res.json({ message: "Logged out successfully" });
 };
 exports.logout = logout;
@@ -102,11 +143,14 @@ const updateProfile = async (req, res) => {
             user: {
                 id: updatedUser.id,
                 name: updatedUser.name,
-                email: updatedUser.email
+                email: updatedUser.email,
+                role: updatedUser.role,
+                managedDept: updatedUser.managedDept ? { id: updatedUser.managedDept.id, name: updatedUser.managedDept.name } : null
             }
         });
     }
     catch (error) {
+        console.error("Update Profile Error:", error);
         const clientErrors = [
             "User with this email already exists",
             "Name must be at least 2 characters long",
@@ -120,3 +164,18 @@ const updateProfile = async (req, res) => {
     }
 };
 exports.updateProfile = updateProfile;
+/**
+ * Get all departments for public registration dropdown
+ */
+const getDepartments = async (req, res) => {
+    try {
+        const depts = await db_1.prisma.department.findMany({
+            select: { id: true, name: true }
+        });
+        res.json(depts);
+    }
+    catch (error) {
+        res.status(500).json({ message: "Error fetching departments" });
+    }
+};
+exports.getDepartments = getDepartments;

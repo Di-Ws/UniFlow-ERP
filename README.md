@@ -1,4 +1,5 @@
-UniFlow ERP 🎓
+Deployed https://github.com/Di-Ws/UniFlow-ERP.git
+
 Multi-Branch University Management System
 
 UniFlow is a scalable, department-centric ERP designed to streamline academic administration. Unlike traditional flat ERPs, UniFlow utilizes a localized administration model where the Head of Department (HOD) acts as the Super Admin for their specific branch, ensuring data isolation and high-integrity reporting.

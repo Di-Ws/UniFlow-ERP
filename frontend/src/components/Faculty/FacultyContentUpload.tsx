@@ -154,7 +154,8 @@ const FacultyContentUpload: React.FC = () => {
   };
 
   const getFullDownloadUrl = (path: string) => {
-    return `http://localhost:5000${path}`;
+    const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    return `${apiBaseUrl}${path}`;
   };
 
   if (loading) {

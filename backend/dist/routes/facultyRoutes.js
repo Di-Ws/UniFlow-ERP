@@ -37,15 +37,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const controller = __importStar(require("../controllers/studentController"));
+const controller = __importStar(require("../controllers/facultyController"));
 const authMiddleware_1 = require("../middleware/authMiddleware");
 const router = express_1.default.Router();
-// Viewing students (filtered by role internally in the controller)
-router.get("/", authMiddleware_1.verifyToken, controller.getStudents);
-router.get("/stats", authMiddleware_1.verifyToken, controller.getDashboardStats);
-router.get("/:id", authMiddleware_1.verifyToken, controller.getStudentById);
-// Management actions - HOD and Faculty only
-router.post("/", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD', 'FACULTY']), controller.createStudent);
-router.put("/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD', 'FACULTY']), controller.updateStudent);
-router.delete("/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD', 'FACULTY']), controller.deleteStudent);
+// Faculty specific dashboard routes
+router.get("/summary", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['FACULTY']), controller.getDashboardSummary);
+router.get("/students", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['FACULTY']), controller.getAssignedStudents);
+router.post("/attendance", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['FACULTY']), controller.markAttendance);
+router.get("/my-courses", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['FACULTY']), controller.getMyCourses);
+// Timetable CRUD
+router.get("/timetable", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['FACULTY']), controller.getTimetable);
+router.post("/timetable", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['FACULTY']), controller.createTimetableSlot);
+router.put("/timetable/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['FACULTY']), controller.updateTimetableSlot);
+router.delete("/timetable/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['FACULTY']), controller.deleteTimetableSlot);
+// Course materials CRUD
+router.get("/content", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['FACULTY']), controller.getUploadedMaterials);
+router.post("/content", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['FACULTY']), controller.uploadMaterial);
+router.delete("/content/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['FACULTY']), controller.deleteMaterial);
 exports.default = router;

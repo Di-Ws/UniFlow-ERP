@@ -32,20 +32,18 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const controller = __importStar(require("../controllers/studentController"));
+const express_1 = require("express");
+const controller = __importStar(require("../controllers/adminController"));
 const authMiddleware_1 = require("../middleware/authMiddleware");
-const router = express_1.default.Router();
-// Viewing students (filtered by role internally in the controller)
-router.get("/", authMiddleware_1.verifyToken, controller.getStudents);
-router.get("/stats", authMiddleware_1.verifyToken, controller.getDashboardStats);
-router.get("/:id", authMiddleware_1.verifyToken, controller.getStudentById);
-// Management actions - HOD and Faculty only
-router.post("/", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD', 'FACULTY']), controller.createStudent);
-router.put("/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD', 'FACULTY']), controller.updateStudent);
-router.delete("/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD', 'FACULTY']), controller.deleteStudent);
+const router = (0, express_1.Router)();
+// HOD only access
+router.get("/pending-users", authMiddleware_1.verifyToken, (0, authMiddleware_1.authorizeRoles)('HOD'), controller.getPendingUsers);
+router.patch("/approve-user/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.authorizeRoles)('HOD'), controller.approveUser);
+router.get("/pending-count", authMiddleware_1.verifyToken, (0, authMiddleware_1.authorizeRoles)('HOD'), controller.getPendingCount);
+router.post("/assign-faculty", authMiddleware_1.verifyToken, (0, authMiddleware_1.authorizeRoles)('HOD'), controller.assignFaculty);
+router.get("/faculty-list", authMiddleware_1.verifyToken, (0, authMiddleware_1.authorizeRoles)('HOD'), controller.getAllFaculty);
+router.get("/unassigned-courses", authMiddleware_1.verifyToken, (0, authMiddleware_1.authorizeRoles)('HOD'), controller.getUnassignedCourses);
+router.get("/unpaid-students", authMiddleware_1.verifyToken, (0, authMiddleware_1.authorizeRoles)('HOD'), controller.getUnpaidStudents);
+router.patch("/permit-student/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.authorizeRoles)('HOD'), controller.permitStudent);
 exports.default = router;

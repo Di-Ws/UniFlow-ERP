@@ -37,15 +37,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const controller = __importStar(require("../controllers/studentController"));
+const controller = __importStar(require("../controllers/leaveController"));
 const authMiddleware_1 = require("../middleware/authMiddleware");
 const router = express_1.default.Router();
-// Viewing students (filtered by role internally in the controller)
-router.get("/", authMiddleware_1.verifyToken, controller.getStudents);
-router.get("/stats", authMiddleware_1.verifyToken, controller.getDashboardStats);
-router.get("/:id", authMiddleware_1.verifyToken, controller.getStudentById);
-// Management actions - HOD and Faculty only
-router.post("/", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD', 'FACULTY']), controller.createStudent);
-router.put("/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD', 'FACULTY']), controller.updateStudent);
-router.delete("/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD', 'FACULTY']), controller.deleteStudent);
+// General role-based viewing (getUserLeaves returns user specific leaves)
+router.get("/", authMiddleware_1.verifyToken, controller.getLeaves);
+router.get("/user", authMiddleware_1.verifyToken, controller.getUserLeaves);
+router.post("/", authMiddleware_1.verifyToken, controller.createLeave);
+// Administrative actions - HOD only
+router.patch("/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD']), controller.updateLeaveStatus);
 exports.default = router;

@@ -41,5 +41,5 @@ const controller = __importStar(require("../controllers/reportController"));
 const authMiddleware_1 = require("../middleware/authMiddleware");
 const router = express_1.default.Router();
 router.post("/", authMiddleware_1.verifyToken, controller.addReport);
-router.get("/:studentId", authMiddleware_1.verifyToken, controller.getReportByStudentId);
+router.get("/:studentId", authMiddleware_1.verifyToken, controller.getReportBystudentId);
 exports.default = router;

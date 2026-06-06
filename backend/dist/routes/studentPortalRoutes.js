@@ -32,20 +32,16 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const controller = __importStar(require("../controllers/studentController"));
+const express_1 = require("express");
+const controller = __importStar(require("../controllers/studentPortalController"));
 const authMiddleware_1 = require("../middleware/authMiddleware");
-const router = express_1.default.Router();
-// Viewing students (filtered by role internally in the controller)
-router.get("/", authMiddleware_1.verifyToken, controller.getStudents);
-router.get("/stats", authMiddleware_1.verifyToken, controller.getDashboardStats);
-router.get("/:id", authMiddleware_1.verifyToken, controller.getStudentById);
-// Management actions - HOD and Faculty only
-router.post("/", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD', 'FACULTY']), controller.createStudent);
-router.put("/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD', 'FACULTY']), controller.updateStudent);
-router.delete("/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD', 'FACULTY']), controller.deleteStudent);
+const router = (0, express_1.Router)();
+// Student only access
+router.get("/dashboard", authMiddleware_1.verifyToken, (0, authMiddleware_1.authorizeRoles)('STUDENT'), controller.getStudentPortalData);
+router.patch("/profile", authMiddleware_1.verifyToken, (0, authMiddleware_1.authorizeRoles)('STUDENT'), controller.updateStudentProfile);
+router.get("/progress", authMiddleware_1.verifyToken, (0, authMiddleware_1.authorizeRoles)('STUDENT'), controller.getMonthlyProgress);
+router.get("/syllabus", authMiddleware_1.verifyToken, (0, authMiddleware_1.authorizeRoles)('STUDENT'), controller.getSyllabus);
+router.post("/pay-fee", authMiddleware_1.verifyToken, (0, authMiddleware_1.authorizeRoles)('STUDENT'), controller.payFee);
+router.get("/content", authMiddleware_1.verifyToken, (0, authMiddleware_1.authorizeRoles)('STUDENT'), controller.getCourseMaterials);
 exports.default = router;

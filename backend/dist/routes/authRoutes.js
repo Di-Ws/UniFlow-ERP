@@ -16,6 +16,10 @@ POST /auth/login
 */
 router.post("/login", authController_1.login);
 /*
+POST /auth/refresh
+*/
+router.post("/refresh", authController_1.refresh);
+/*
 POST /auth/logout
 */
 router.post("/logout", authController_1.logout);
@@ -27,4 +31,5 @@ router.get("/me", authMiddleware_1.verifyToken, authController_1.getCurrentUser)
 PUT /auth/profile
 */
 router.put("/profile", authMiddleware_1.verifyToken, authController_1.updateProfile);
+router.get("/departments", authController_1.getDepartments);
 exports.default = router;

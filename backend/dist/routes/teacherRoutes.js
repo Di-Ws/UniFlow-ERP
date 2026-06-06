@@ -40,6 +40,12 @@ const express_1 = __importDefault(require("express"));
 const controller = __importStar(require("../controllers/teacherController"));
 const authMiddleware_1 = require("../middleware/authMiddleware");
 const router = express_1.default.Router();
-router.post("/", authMiddleware_1.verifyToken, controller.addTeacher);
-router.get("/", authMiddleware_1.verifyToken, controller.getTeachers);
+// All roles can view Facultys (getFacultys filters data by role internally)
+router.get("/", authMiddleware_1.verifyToken, controller.getFacultys);
+router.get("/:id", authMiddleware_1.verifyToken, controller.getFacultyById);
+// Administrative actions - HOD only
+router.post("/", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD']), controller.addFaculty);
+router.put("/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD']), controller.updateFaculty);
+router.delete("/:id", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD']), controller.deleteFaculty);
+router.post("/:id/assign-students", authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)(['HOD']), controller.assignStudents);
 exports.default = router;

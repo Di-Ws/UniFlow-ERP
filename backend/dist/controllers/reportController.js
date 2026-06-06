@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReportByStudentId = exports.addReport = void 0;
+exports.getReportBystudentId = exports.addReport = void 0;
 const db_1 = require("../config/db");
 const addReport = async (req, res) => {
     try {
@@ -14,7 +14,7 @@ const addReport = async (req, res) => {
     }
 };
 exports.addReport = addReport;
-const getReportByStudentId = async (req, res) => {
+const getReportBystudentId = async (req, res) => {
     try {
         const reports = await db_1.prisma.academicReport.findMany({
             where: { studentId: Number(req.params.studentId) }
@@ -25,4 +25,4 @@ const getReportByStudentId = async (req, res) => {
         res.status(500).json({ message: "Error fetching reports", error: error.message });
     }
 };
-exports.getReportByStudentId = getReportByStudentId;
+exports.getReportBystudentId = getReportBystudentId;

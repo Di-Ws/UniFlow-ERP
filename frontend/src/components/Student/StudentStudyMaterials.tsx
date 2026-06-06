@@ -126,7 +126,8 @@ const StudentStudyMaterials: React.FC<StudentStudyMaterialsProps> = ({
   };
 
   const handleDownload = (path: string, fileName: string) => {
-    const fullUrl = `http://localhost:5000${path}`;
+    const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    const fullUrl = `${apiBaseUrl}${path}`;
     const link = document.createElement('a');
     link.href = fullUrl;
     link.target = '_blank';
