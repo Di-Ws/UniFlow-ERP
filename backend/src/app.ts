@@ -14,6 +14,7 @@ import analyticsRoutes from "./routes/analyticsRoutes";
 import adminRoutes from "./routes/adminRoutes";
 import studentPortalRoutes from "./routes/studentPortalRoutes";
 import strategicRoutes from "./routes/strategicRoutes";
+import meetingRoutes from "./routes/meetingRoutes";
 
 import path from "path";
 
@@ -68,6 +69,7 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/student-portal", studentPortalRoutes);
 app.use("/api/strategic", strategicRoutes);
+app.use("/api/meetings", meetingRoutes);
 
 // Global Error Handler to prevent crashes
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

@@ -1,16 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Calendar, FileText, LogOut, Lock, CheckCircle } from 'lucide-react';
+import { LayoutDashboard, Calendar, FileText, LogOut, Lock, CheckCircle, Menu, X, Video } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import ThemeToggle from '../ThemeToggle';
 
 const FacultyNavbar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="h-24 bg-white/80 dark:bg-dark-card/65 backdrop-blur-md border-b border-slate-100 dark:border-white/5 px-12 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+    <nav className="h-24 bg-white/80 dark:bg-dark-card/65 backdrop-blur-md border-b border-slate-100 dark:border-white/5 px-6 sm:px-12 flex items-center justify-between sticky top-0 z-30 shadow-sm">
       {/* Left: Branding */}
       <div className="flex items-center gap-4">
+        <button 
+          onClick={() => setIsOpen(!isOpen)} 
+          className="lg:hidden p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 mr-2"
+        >
+          <Menu size={24} />
+        </button>
         <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-primary/20">
           U
         </div>
@@ -24,7 +31,8 @@ const FacultyNavbar: React.FC = () => {
           { name: 'Time Table', path: '/faculty/calendar', icon: Calendar },
           { name: 'Leaves', path: '/faculty/leaves', icon: Calendar },
           { name: 'Attendance', path: '/faculty/attendance', icon: CheckCircle },
-          { name: 'Examination', path: '/faculty/reports', icon: FileText }
+          { name: 'Examination', path: '/faculty/reports', icon: FileText },
+          { name: 'Virtual Class', path: '/faculty/meetings', icon: Video }
         ].map((link, idx) => (
           <NavLink
             key={idx}
@@ -64,6 +72,70 @@ const FacultyNavbar: React.FC = () => {
 
         <ThemeToggle />
       </div>
+
+      {/* Mobile Menu Drawer */}
+      {isOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div 
+            onClick={() => setIsOpen(false)} 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+          ></div>
+          
+          {/* Menu Panel */}
+          <div className="relative w-80 max-w-xs bg-white dark:bg-dark-card h-full p-6 shadow-2xl flex flex-col justify-between border-r border-slate-100 dark:border-white/5 animate-slide-in">
+            <div className="space-y-6">
+              <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-white/5">
+                <span className="text-2xl font-black text-slate-900 dark:text-white">Menu</span>
+                <button 
+                  onClick={() => setIsOpen(false)} 
+                  className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                {[
+                   { name: 'Home', path: '/faculty/dashboard', icon: LayoutDashboard },
+                   { name: 'Time Table', path: '/faculty/calendar', icon: Calendar },
+                   { name: 'Leaves', path: '/faculty/leaves', icon: Calendar },
+                   { name: 'Attendance', path: '/faculty/attendance', icon: CheckCircle },
+                   { name: 'Examination', path: '/faculty/reports', icon: FileText },
+                   { name: 'Virtual Class', path: '/faculty/meetings', icon: Video }
+                 ].map((link, idx) => (
+                  <NavLink
+                    key={idx}
+                    to={link.path}
+                    onClick={() => setIsOpen(false)}
+                    className={({ isActive }) => 
+                      `flex items-center gap-3 px-6 py-3.5 rounded-[16px] text-sm font-black transition-all ${
+                        isActive 
+                        ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                        : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                      }`
+                    }
+                  >
+                    <link.icon size={18} />
+                    {link.name}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+            
+            {/* Mobile Actions */}
+            <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex flex-col gap-2">
+              <button 
+                onClick={() => { setIsOpen(false); logout(); }}
+                className="w-full flex items-center gap-3 px-6 py-3.5 rounded-[16px] text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 font-bold transition-all"
+              >
+                <LogOut size={18} />
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };

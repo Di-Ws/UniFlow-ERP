@@ -59,10 +59,14 @@ const Register: React.FC = () => {
     }
     
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailLower = formData.email.toLowerCase();
+    const isAllowedDomain = emailLower.endsWith('@college.edu.in') || emailLower.endsWith('@university.edu');
     if (!formData.email) {
       newErrors.email = 'Email is required';
     } else if (!emailRegex.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
+    } else if (!isAllowedDomain) {
+      newErrors.email = 'Only institutional email domains (@college.edu.in) are permitted';
     }
     
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;

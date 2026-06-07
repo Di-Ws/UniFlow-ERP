@@ -1,22 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Search, Bell, Home } from 'lucide-react';
+import { Search, Bell, Home, Menu } from 'lucide-react';
 import ThemeToggle from '../ThemeToggle';
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  onMenuClick?: () => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
   const location = useLocation();
 
   const pathnames = location.pathname.split('/').filter(x => x);
   const breadcrumbText = pathnames.length > 1 ? pathnames[1].charAt(0).toUpperCase() + pathnames[1].slice(1) : (pathnames.length === 1 ? pathnames[0].charAt(0).toUpperCase() + pathnames[0].slice(1) : 'Dashboard');
 
   return (
-    <nav className="bg-white/80 dark:bg-dark-card/65 backdrop-blur-md border-b border-gray-100 dark:border-white/5 h-[72px] flex items-center justify-between px-8 sticky top-0 z-20 w-full">
+    <nav className="bg-white/80 dark:bg-dark-card/65 backdrop-blur-md border-b border-gray-100 dark:border-white/5 h-[72px] flex items-center justify-between px-4 sm:px-8 sticky top-0 z-20 w-full">
       
       {/* Breadcrumbs */}
       <div className="flex items-center text-sm font-medium text-gray-500 dark:text-slate-400">
-        <Home size={14} className="mr-2" />
-        <span>Home</span>
-        <span className="mx-2 text-gray-300 dark:text-slate-600">›</span>
+        {onMenuClick && (
+          <button 
+            onClick={onMenuClick}
+            className="lg:hidden p-2 rounded-xl text-slate-500 hover:bg-gray-100 dark:hover:bg-white/5 mr-2"
+          >
+            <Menu size={20} />
+          </button>
+        )}
+        <div className="hidden sm:flex items-center">
+          <Home size={14} className="mr-2" />
+          <span>Home</span>
+          <span className="mx-2 text-gray-300 dark:text-slate-600">›</span>
+        </div>
         <span className="text-gray-900 dark:text-white">{breadcrumbText}</span>
       </div>
 

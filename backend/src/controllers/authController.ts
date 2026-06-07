@@ -43,7 +43,9 @@ export const login = async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        managedDept: user.managedDept ? { id: user.managedDept.id, name: user.managedDept.name } : null
+        managedDept: user.managedDept ? { id: user.managedDept.id, name: user.managedDept.name } : null,
+        faculty: (user as any).faculty ? { id: (user as any).faculty.id, departmentId: (user as any).faculty.departmentId, department: (user as any).faculty.department } : null,
+        student: (user as any).student ? { id: (user as any).student.id, departmentId: (user as any).student.departmentId, department: (user as any).student.department } : null
       }
     });
   } catch (error: any) {
@@ -77,7 +79,9 @@ export const refresh = async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        managedDept: (user as any).managedDept ? { id: (user as any).managedDept.id, name: (user as any).managedDept.name } : null
+        managedDept: (user as any).managedDept ? { id: (user as any).managedDept.id, name: (user as any).managedDept.name } : null,
+        faculty: (user as any).faculty ? { id: (user as any).faculty.id, departmentId: (user as any).faculty.departmentId, department: (user as any).faculty.department } : null,
+        student: (user as any).student ? { id: (user as any).student.id, departmentId: (user as any).student.departmentId, department: (user as any).student.department } : null
       }
     });
   } catch (error: any) {
@@ -118,7 +122,9 @@ export const updateProfile = async (req: any, res: Response) => {
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
-        managedDept: (updatedUser as any).managedDept ? { id: (updatedUser as any).managedDept.id, name: (updatedUser as any).managedDept.name } : null
+        managedDept: (updatedUser as any).managedDept ? { id: (updatedUser as any).managedDept.id, name: (updatedUser as any).managedDept.name } : null,
+        faculty: (updatedUser as any).faculty ? { id: (updatedUser as any).faculty.id, departmentId: (updatedUser as any).faculty.departmentId, department: (updatedUser as any).faculty.department } : null,
+        student: (updatedUser as any).student ? { id: (updatedUser as any).student.id, departmentId: (updatedUser as any).student.departmentId, department: (updatedUser as any).student.department } : null
       }
     });
   } catch (error: any) {

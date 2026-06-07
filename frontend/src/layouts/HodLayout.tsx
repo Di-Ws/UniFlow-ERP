@@ -15,7 +15,7 @@ const HodLayout: React.FC = () => {
         <HodSidebar />
         
         {/* Middle Dashboard Content */}
-        <main className="flex-1 overflow-y-auto p-12 hide-scrollbar">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 hide-scrollbar">
           <div className="w-full max-w-[1600px] mx-auto">
             <Outlet />
           </div>

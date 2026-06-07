@@ -9,6 +9,23 @@ export interface User {
     id: number;
     name: string;
   } | null;
+  faculty?: {
+    id: number;
+    departmentId: number;
+    department?: {
+      id: number;
+      name: string;
+    } | null;
+  } | null;
+  student?: {
+    id: number;
+    departmentId: number;
+    semester: number;
+    department?: {
+      id: number;
+      name: string;
+    } | null;
+  } | null;
 }
 
 interface DecodedToken {

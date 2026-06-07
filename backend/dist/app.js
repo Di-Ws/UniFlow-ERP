@@ -18,6 +18,7 @@ const analyticsRoutes_1 = __importDefault(require("./routes/analyticsRoutes"));
 const adminRoutes_1 = __importDefault(require("./routes/adminRoutes"));
 const studentPortalRoutes_1 = __importDefault(require("./routes/studentPortalRoutes"));
 const strategicRoutes_1 = __importDefault(require("./routes/strategicRoutes"));
+const meetingRoutes_1 = __importDefault(require("./routes/meetingRoutes"));
 const path_1 = __importDefault(require("path"));
 const app = (0, express_1.default)();
 const allowedOrigins = [
@@ -28,15 +29,22 @@ const allowedOrigins = [
 ];
 if (process.env.FRONTEND_URL) {
     allowedOrigins.push(process.env.FRONTEND_URL);
-    if (process.env.FRONTEND_URL.endsWith("/")) {
-        allowedOrigins.push(process.env.FRONTEND_URL.slice(0, -1));
-    }
-    else {
-        allowedOrigins.push(process.env.FRONTEND_URL + "/");
-    }
 }
 app.use((0, cors_1.default)({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+        if (!origin)
+            return callback(null, true);
+        const isAllowed = allowedOrigins.includes(origin) ||
+            /\.onrender\.com$/.test(origin) ||
+            /^http:\/\/localhost:\d+$/.test(origin) ||
+            /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
+        if (isAllowed) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true
 }));
@@ -59,6 +67,7 @@ app.use("/api/analytics", analyticsRoutes_1.default);
 app.use("/api/admin", adminRoutes_1.default);
 app.use("/api/student-portal", studentPortalRoutes_1.default);
 app.use("/api/strategic", strategicRoutes_1.default);
+app.use("/api/meetings", meetingRoutes_1.default);
 // Global Error Handler to prevent crashes
 app.use((err, req, res, next) => {
     console.error("Express Global Error:", err.stack || err);

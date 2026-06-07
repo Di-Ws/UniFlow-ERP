@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   Box, LogOut, CalendarPlus, LayoutDashboard, 
-  Users, GraduationCap, Calendar, PieChart, Settings, UserCircle
+  Users, GraduationCap, Calendar, PieChart, Settings, UserCircle, Video
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getPendingCount } from '../../services/adminService';
@@ -54,6 +54,7 @@ const Sidebar: React.FC = () => {
       { path: '/hod/faculty', icon: GraduationCap, label: 'Faculty' },
       { path: '/hod/leaves', icon: Calendar, label: 'Leaves' },
       { path: '/hod/events', icon: PieChart, label: 'Events' },
+      { path: '/hod/meetings', icon: Video, label: 'Virtual Class' },
       { path: '/hod/settings', icon: Settings, label: 'Settings' },
     ],
     Faculty: [
@@ -61,6 +62,7 @@ const Sidebar: React.FC = () => {
       { path: '/faculty/students', icon: Users, label: 'My Students' },
       { path: '/faculty/leaves', icon: Calendar, label: 'My Leaves' },
       { path: '/faculty/events', icon: PieChart, label: 'Events' },
+      { path: '/faculty/meetings', icon: Video, label: 'Virtual Class' },
       { path: '/faculty/settings', icon: Settings, label: 'Settings' },
     ],
     Student: [
@@ -68,6 +70,7 @@ const Sidebar: React.FC = () => {
       { path: '/student/profile', icon: UserCircle, label: 'My Profile' },
       { path: '/student/leaves', icon: Calendar, label: 'My Leaves' },
       { path: '/student/events', icon: PieChart, label: 'Events' },
+      { path: '/student/meetings', icon: Video, label: 'Virtual Class' },
     ],
   };
 

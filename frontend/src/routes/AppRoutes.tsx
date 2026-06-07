@@ -22,6 +22,7 @@ import StudentPortal from '../pages/Profile/StudentPortal';
 import Unauthorized from '../pages/Unauthorized';
 import AttendancePage from '../pages/Attendance/Attendance';
 import { Events } from '../pages/PlaceholderPages';
+import Meetings from '../pages/Meetings/Meetings';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -47,6 +48,7 @@ const AppRoutes: React.FC = () => {
         <Route path="leaves" element={<Leaves />} />
         <Route path="attendance" element={<AttendancePage />} />
         <Route path="events" element={<Events />} />
+        <Route path="meetings" element={<Meetings />} />
         <Route path="settings" element={<Settings />} />
         <Route path="profile" element={<Profile />} />
         <Route index element={<Navigate to="dashboard" replace />} />
@@ -66,6 +68,7 @@ const AppRoutes: React.FC = () => {
         <Route path="leaves" element={<Leaves />} />
         <Route path="attendance" element={<AttendancePage />} />
         <Route path="events" element={<Events />} />
+        <Route path="meetings" element={<Meetings />} />
         <Route path="settings" element={<Settings />} />
         <Route path="profile" element={<Profile />} />
         <Route index element={<Navigate to="dashboard" replace />} />
@@ -84,6 +87,7 @@ const AppRoutes: React.FC = () => {
         <Route path="profile" element={<StudentPortal />} />
         <Route path="leaves" element={<Leaves />} />
         <Route path="events" element={<Events />} />
+        <Route path="meetings" element={<Meetings />} />
         <Route index element={<Navigate to="dashboard" replace />} />
       </Route>
 

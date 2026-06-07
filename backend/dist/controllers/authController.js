@@ -61,10 +61,11 @@ const login = async (req, res) => {
     try {
         const { accessToken, refreshToken, user } = await authService.loginUser(req.body);
         // Set refresh token in HttpOnly cookie
+        const isProd = process.env.NODE_ENV === 'production';
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            secure: isProd,
+            sameSite: isProd ? 'none' : 'lax',
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
         });
         res.json({
@@ -121,7 +122,12 @@ const logout = async (req, res) => {
     if (refreshToken) {
         await authService.revokeRefreshToken(refreshToken);
     }
-    res.clearCookie('refreshToken');
+    const isProd = process.env.NODE_ENV === 'production';
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: isProd,
+        sameSite: isProd ? 'none' : 'lax'
+    });
     res.json({ message: "Logged out successfully" });
 };
 exports.logout = logout;

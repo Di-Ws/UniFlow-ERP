@@ -103,8 +103,10 @@ const getStrategicSummary = async (req, res) => {
         // 4. Virtual Classroom Validation (ECE Exclusivity check)
         const invalidClassrooms = await db_1.prisma.virtualClassroom.findMany({
             where: {
-                departmentName: {
-                    contains: departmentName,
+                department: {
+                    name: {
+                        contains: departmentName,
+                    }
                 },
                 meetingLink: { not: { contains: 'university.edu' } } // Example validation rule
             }

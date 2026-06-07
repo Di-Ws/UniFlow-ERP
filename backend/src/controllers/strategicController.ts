@@ -110,10 +110,12 @@ export const getStrategicSummary = async (req: AuthRequest, res: Response) => {
     });
 
     // 4. Virtual Classroom Validation (ECE Exclusivity check)
-    const invalidClassrooms = await (prisma as any).virtualClassroom.findMany({
+    const invalidClassrooms = await prisma.virtualClassroom.findMany({
       where: {
-        departmentName: {
-          contains: departmentName as string,
+        department: {
+          name: {
+            contains: departmentName as string,
+          }
         },
         meetingLink: { not: { contains: 'university.edu' } } // Example validation rule
       }

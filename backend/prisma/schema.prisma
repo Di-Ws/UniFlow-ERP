@@ -75,6 +75,7 @@ model Department {
   faculty   Faculty[]
   students  Student[]
   courses   Course[]
+  virtualClassrooms VirtualClassroom[]
   
   createdAt DateTime  @default(now())
 }
@@ -100,6 +101,7 @@ model Faculty {
   timetable    Timetable[]
   attendanceRecords Attendance[]
   materials    CourseMaterial[]
+  virtualClassrooms VirtualClassroom[]
   
   createdAt    DateTime   @default(now())
 
@@ -199,19 +201,29 @@ model Course {
   timetable    Timetable[]
   attendance   Attendance[]
   materials    CourseMaterial[]
+  virtualClassrooms VirtualClassroom[]
 
   @@index([departmentId])
 }
 
 model VirtualClassroom {
-  id            Int      @id @default(autoincrement())
-  batchId       String
-  meetingLink   String
-  departmentName String
-  courseCode    String?
-  createdAt     DateTime @default(now())
+  id                 Int        @id @default(autoincrement())
+  topic              String     @default("Virtual Classroom Session")
+  meetingLink        String     @db.Text
+  departmentId       Int
+  department         Department @relation(fields: [departmentId], references: [id])
+  semester           Int
+  courseId           Int?
+  course             Course?    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  facultyId          Int
+  faculty            Faculty    @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  capacity           Int        @default(56)
+  activeParticipants Int        @default(0)
+  createdAt          DateTime   @default(now())
 
-  @@index([batchId])
+  @@index([departmentId])
+  @@index([courseId])
+  @@index([facultyId])
 }
 
 model Attendance {

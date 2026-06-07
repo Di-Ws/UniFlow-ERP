@@ -38,6 +38,11 @@ export const registerUser = async (data: any) => {
     throw new Error("Please provide a valid email address");
   }
 
+  const isAllowedDomain = email.endsWith("@college.edu.in") || email.endsWith("@university.edu");
+  if (!isAllowedDomain) {
+    throw new Error("Registration restricted to institutional email domains only (@college.edu.in)");
+  }
+
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
   if (!password || !passwordRegex.test(password)) {
     throw new Error("Password must be at least 8 characters long and contain both letters and numbers");
@@ -98,6 +103,20 @@ export const registerUser = async (data: any) => {
       include: {
         managedDept: {
           select: { id: true, name: true }
+        },
+        faculty: {
+          include: {
+            department: {
+              select: { id: true, name: true }
+            }
+          }
+        },
+        student: {
+          include: {
+            department: {
+              select: { id: true, name: true }
+            }
+          }
         }
       }
     });
@@ -126,6 +145,20 @@ export const loginUser = async (data: any) => {
     include: {
       managedDept: {
         select: { id: true, name: true }
+      },
+      faculty: {
+        include: {
+          department: {
+            select: { id: true, name: true }
+          }
+        }
+      },
+      student: {
+        include: {
+          department: {
+            select: { id: true, name: true }
+          }
+        }
       }
     }
   });
@@ -175,6 +208,20 @@ export const refreshAccessToken = async (refreshToken: string) => {
       include: {
         managedDept: {
           select: { id: true, name: true }
+        },
+        faculty: {
+          include: {
+            department: {
+              select: { id: true, name: true }
+            }
+          }
+        },
+        student: {
+          include: {
+            department: {
+              select: { id: true, name: true }
+            }
+          }
         }
       }
     });
@@ -202,6 +249,20 @@ export const getUserById = async (id: number) => {
     include: {
       managedDept: {
         select: { id: true, name: true }
+      },
+      faculty: {
+        include: {
+          department: {
+            select: { id: true, name: true }
+          }
+        }
+      },
+      student: {
+        include: {
+          department: {
+            select: { id: true, name: true }
+          }
+        }
       }
     }
   });
