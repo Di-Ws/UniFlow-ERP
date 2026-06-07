@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Network, Book } from 'lucide-react';
+import { Network } from 'lucide-react';
 import InputField from '../../components/Auth/InputField';
 import { registerAPI, getDepartmentsAPI } from '../../api/auth';
 import '../../styles/Auth.css';
@@ -143,7 +143,7 @@ const Register: React.FC = () => {
             error={errors.email}
           />
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <div className="input-group">
               <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#94a3b8', marginBottom: '0.5rem' }}>Register As</label>
               <select
@@ -162,9 +162,9 @@ const Register: React.FC = () => {
                   cursor: 'pointer'
                 }}
               >
-                <option value="HOD">HOD (Admin)</option>
-                <option value="Faculty">Faculty</option>
-                <option value="Student">Student</option>
+                <option value="HOD" style={{ background: '#1e293b', color: '#f8fafc' }}>HOD (Admin)</option>
+                <option value="Faculty" style={{ background: '#1e293b', color: '#f8fafc' }}>Faculty</option>
+                <option value="Student" style={{ background: '#1e293b', color: '#f8fafc' }}>Student</option>
               </select>
             </div>
 
@@ -188,9 +188,18 @@ const Register: React.FC = () => {
                   cursor: 'pointer'
                 }}
               >
-                {departments.map(dept => (
-                  <option key={dept.id} value={dept.id}>{dept.name}</option>
-                ))}
+                {departments.length === 0 ? (
+                  <option value="" style={{ background: '#1e293b', color: '#f8fafc' }}>Loading...</option>
+                ) : (
+                  <>
+                    <option value="" style={{ background: '#1e293b', color: '#f8fafc' }}>Select Department</option>
+                    {departments.map(dept => (
+                      <option key={dept.id} value={dept.id} style={{ background: '#1e293b', color: '#f8fafc' }}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </>
+                )}
               </select>
             </div>
           </div>

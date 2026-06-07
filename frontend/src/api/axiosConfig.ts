@@ -1,6 +1,21 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const getApiBaseUrl = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+    const hostname = window.location.hostname;
+    // Only resolve dynamically if it is a local network IP address (e.g. 192.168.1.15)
+    const isIpAddress = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(hostname);
+    if (isIpAddress && hostname !== '127.0.0.1') {
+      return `http://${hostname}:5000`;
+    }
+  }
+  return 'http://localhost:5000';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
